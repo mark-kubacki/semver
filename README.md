@@ -40,12 +40,12 @@ Please Note
 
 The SemVer specification says:
 
-  9. A pre-release version MAY be denoted by appending a hyphen and a series of 
-  dot separated identifiers immediately following the patch version. […]
+    9. A pre-release version MAY be denoted by appending a hyphen and a series of 
+    dot separated identifiers immediately following the patch version. […]
 
 It is, in other words, ordered from highest to lowest:
 
-  p > (no release type/»common«) > rc > pre > beta > alpha
+    p > (no release type/»common«) > rc > pre > beta > alpha
 
 Therefore it is: ```Version("1.0.0-1") < Version("1.0.0")```
 
@@ -60,24 +60,24 @@ Contribute
 
 Please open issues with minimal examples of what is going wrong. For example:
 
-  Mark, this does not work but I feel that it should:
-  ```golang
-  v, err := semver.Version("17.1o0")
-  # yields an error
-  # I expected 17.100
-  ```
+    Mark, this does not work but I feel that it should:
+    ```golang
+    v, err := semver.Version("17.1o0")
+    # yields an error
+    # I expected 17.100
+    ```
 
 Please write a test case with your expectations, if you ask for a new feature.
 
-  I'd like **semver.Range** to support interface **expvar.Var**, like this:
-  ```golang
-  Convey("Range implements interface's expvar.Var…", t, func() {
-    r, _ := NewRange("1.2.3")
-
-    Convey("String()", func() {
-      So(r.String(), ShouldEqual, "1.2.3")
+    I'd like **semver.Range** to support interface **expvar.Var**, like this:
+    ```golang
+    Convey("Range implements interface's expvar.Var…", t, func() {
+      r, _ := NewRange("1.2.3")
+      
+      Convey("String()", func() {
+        So(r.String(), ShouldEqual, "1.2.3")
+      })
     })
-  })
 
 Pull requests are welcome.
 Please add your name and email address to file *AUTHORS* and/or *CONTRIBUTORS*.
