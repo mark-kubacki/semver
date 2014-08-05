@@ -2,7 +2,7 @@ Semantic Versioning for Golang
 ==============================
 
 [![Build Status](https://drone.io/github.com/wmark/semver/status.png)](https://drone.io/github.com/wmark/semver/latest)
-[![Coverage Status](https://img.shields.io/coveralls/wmark/semver.svg)](https://coveralls.io/r/wmark/semver?branch=master)
+[![Coverage Status](https://coveralls.io/repos/wmark/semver/badge.png?branch=master)](https://coveralls.io/r/wmark/semver?branch=master)
 [![GoDoc](https://godoc.org/github.com/wmark/semver?status.png)](https://godoc.org/github.com/wmark/semver)
 
 A library for parsing and processing of *Versions* and *Ranges* in:
