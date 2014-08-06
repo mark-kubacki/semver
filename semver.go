@@ -156,7 +156,18 @@ func (t *Version) limitedLess(o *Version) bool {
 // Non-commutative: 1.0.0-p1 does not equal 1.0.0!
 func (t *Version) LimitedEqual(o *Version) bool {
 	if t.version[idxReleaseType] == common && o.version[idxReleaseType] > common {
-		return signDelta(t.version, o.version, idxReleaseType) == 0
+		return t.sharesPrefixWith(o)
 	}
 	return signDelta(t.version, o.version, idxSpecifierType) == 0
+}
+
+// Use this to exclude pre-releases.
+func (v *Version) IsAPreRelease() bool {
+	return v.version[idxReleaseType] < common
+}
+
+// A 'prefix' is the major, minor, patch and revision number.
+// For example: 1.2.3.4…
+func (t *Version) sharesPrefixWith(o *Version) bool {
+	return signDelta(t.version, o.version, idxReleaseType) == 0
 }

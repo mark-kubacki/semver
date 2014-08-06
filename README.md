@@ -28,7 +28,8 @@ v2, err := semver.NewVersion("2.0.0-alpha20140805.456-rc3+build1800")
 v1.Less(v2)
 
 r1, err := NewRange("~1.2")
-r1.Contains(v1)
+r1.Contains(v1)      // true
+r1.IsSatisfiedBy(v1) // false
 ```
 
 Also check the [GoDocs](http://godoc.org/github.com/wmark/semver)

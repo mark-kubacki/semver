@@ -119,6 +119,7 @@ func newRangeByShortcut(str string) (*Range, error) {
 	return r, nil
 }
 
+// Checks if a Version falls into a Range.
 func (r *Range) Contains(v *Version) bool {
 	if v == nil {
 		return false
@@ -129,6 +130,25 @@ func (r *Range) Contains(v *Version) bool {
 	}
 
 	return r.satisfiesLowerBound(v) && r.satisfiesUpperBound(v)
+}
+
+// Works like Contains, but rejects pre-releases if neither of the bounds is a pre-release.
+// Use this in the context of pulling in packages because it follows the spirit of §9 SemVer.
+// Also see https://github.com/npm/node-semver/issues/64
+func (r *Range) IsSatisfiedBy(v *Version) bool {
+	if !r.Contains(v) {
+		return false
+	}
+	if v.IsAPreRelease() {
+		if r.lower != nil && r.lower.IsAPreRelease() && r.lower.sharesPrefixWith(v) {
+			return true
+		}
+		if r.upper != nil && r.upper.IsAPreRelease() && r.upper.sharesPrefixWith(v) {
+			return true
+		}
+		return false
+	}
+	return true
 }
 
 func (r *Range) satisfiesLowerBound(v *Version) bool {
@@ -155,7 +175,7 @@ func (r *Range) satisfiesUpperBound(v *Version) bool {
 	}
 
 	if !r.equalsUpper && r.upper.version[idxReleaseType] == common {
-		equal = signDelta(r.upper.version, v.version, idxReleaseType) == 0
+		equal = r.upper.sharesPrefixWith(v)
 	}
 
 	return v.limitedLess(r.upper) && !equal
@@ -172,5 +192,5 @@ func Satisfies(aVersion, aRange string) (bool, error) {
 		return false, err
 	}
 
-	return r.Contains(v), nil
+	return r.IsSatisfiedBy(v), nil
 }
