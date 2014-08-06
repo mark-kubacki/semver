@@ -546,3 +546,32 @@ func TestSingleBound(t *testing.T) {
 	})
 
 }
+
+func TestSatisfies(t *testing.T) {
+
+	Convey("Convenience function Satisfies", t, func() {
+
+		Convey("works with valid input", func() {
+			t, _ := Satisfies("1.2.3", "^1.2.2")
+			So(t, ShouldBeTrue)
+			t, _ = Satisfies("1.2.3-1", "^1.2.2")
+			SkipSo(t, ShouldBeFalse)
+			t, _ = Satisfies("1.2.3-2", "^1.2.2-1")
+			So(t, ShouldBeTrue)
+			t, _ = Satisfies("1.2.4-1", "^1.2.2-1")
+			SkipSo(t, ShouldBeFalse)
+		})
+
+		Convey("yields an error on invalid Version", func() {
+			t, err := Satisfies("1.2.3.4.5.6", "^1.2.2")
+			So(t, ShouldBeFalse)
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("yields an error on invalid Range", func() {
+			t, err := Satisfies("1.2.3", "^1.2.2/1.2.5")
+			So(t, ShouldBeFalse)
+			So(err, ShouldNotBeNil)
+		})
+	})
+}

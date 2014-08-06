@@ -160,3 +160,17 @@ func (r *Range) satisfiesUpperBound(v *Version) bool {
 
 	return v.limitedLess(r.upper) && !equal
 }
+
+// Convenience function for former NodeJS developers.
+func Satisfies(aVersion, aRange string) (bool, error) {
+	v, err := NewVersion(aVersion)
+	if err != nil {
+		return false, err
+	}
+	r, err := NewRange(aRange)
+	if err != nil {
+		return false, err
+	}
+
+	return r.Contains(v), nil
+}
