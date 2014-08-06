@@ -23,7 +23,7 @@ $ go get -v github.com/wmark/semver
 ```go
 import github.com/wmark/semver
 
-v1, err := semver.NewVersion("1.3.0-beta")
+v1, err := semver.NewVersion("1.2.3-beta")
 v2, err := semver.NewVersion("2.0.0-alpha20140805.456-rc3+build1800")
 v1.Less(v2)
 
@@ -38,22 +38,22 @@ and [Gentoo Linux Ebuild File Format](http://devmanual.gentoo.org/ebuild-writing
 Please Note
 -----------
 
-The SemVer specification says:
+It is, ordered from lowest to highest:
 
-    9. A pre-release version MAY be denoted by appending a hyphen and a series of 
+    alpha < beta < pre < rc < (no release type/»common«) < p
+
+Therefore it is:
+
+    Version("1.0.0-pre1") ≙ Version("1.0.0-1") < Version("1.0.0") < Version("1.0.0-p1")
+
+… because the SemVer specification says:
+
+    9. A pre-release version MAY be denoted by appending a hyphen and a series of
     dot separated identifiers immediately following the patch version. […]
 
-It is, in other words, ordered from highest to lowest:
-
-    p > (no release type/»common«) > rc > pre > beta > alpha
-
-Therefore it is: ```Version("1.0.0-1") < Version("1.0.0")```
-
-If you mean to say that a version adds to 1.0.0, then the right notation is this first one: ```Version("1.0.0-p1") > Version("1.0.0")```
-
-Most *NodeJS* authors write **~1.2.3**, copying from examples, which is ```Range(">=1.2.3 <1.3.0")```,
-excluding acceptable versions,
-but indeed mean **>=1.2.3**.
+Most *NodeJS* authors write **~1.2.3** where **>=1.2.3** would fit better.
+*~1.2.3* is ```Range(">=1.2.3 <1.3.0")``` and excludes versions such as *1.4.0*,
+which almost always work.
 
 Contribute
 ----------
@@ -78,6 +78,7 @@ Please write a test case with your expectations, if you ask for a new feature.
         So(r.String(), ShouldEqual, "1.2.3")
       })
     })
+    ```
 
 Pull requests are welcome.
 Please add your name and email address to file *AUTHORS* and/or *CONTRIBUTORS*.
