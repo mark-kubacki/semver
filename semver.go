@@ -72,17 +72,23 @@ type Version struct {
 }
 
 func NewVersion(str string) (*Version, error) {
+	ver := &Version{}
+	err := ver.Parse(str)
+	return ver, err
+}
+
+func (ver *Version) Parse(str string) error {
 	allMatches := verRegexp.FindAllStringSubmatch(str, -1)
 	if allMatches == nil {
-		return nil, errors.New("Given string does not resemble a Version.")
+		return errors.New("Given string does not resemble a Version.")
 	}
-	ver := new(Version)
+
 	m := allMatches[0]
 
 	// version
 	n, err := newDotDelimitedNumber(m[1])
 	if err != nil {
-		return nil, err
+		return err
 	}
 	copy(ver.version[:], n)
 
@@ -93,7 +99,7 @@ func NewVersion(str string) (*Version, error) {
 	if m[3] != "" {
 		n, err := newDotDelimitedNumber(m[3])
 		if err != nil {
-			return nil, err
+			return err
 		}
 		copy(ver.version[idxRelease:], n)
 	}
@@ -105,7 +111,7 @@ func NewVersion(str string) (*Version, error) {
 	if m[5] != "" {
 		n, err := newDotDelimitedNumber(m[5])
 		if err != nil {
-			return nil, err
+			return err
 		}
 		copy(ver.version[idxSpecifier:], n)
 	}
@@ -114,12 +120,12 @@ func NewVersion(str string) (*Version, error) {
 	if m[7] != "" {
 		i, err := strconv.Atoi(m[7])
 		if err != nil {
-			return nil, err
+			return err
 		}
 		ver.build = i
 	}
 
-	return ver, nil
+	return nil
 }
 
 // Returns sign(a - b).
