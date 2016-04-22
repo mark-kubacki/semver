@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package semver contains types and functions for
+// parsing of Versions and (Version-)Ranges.
 package semver
 
 import (
@@ -65,19 +67,25 @@ var releaseValue = map[string]int{
 
 var verRegexp = regexp.MustCompile(`^(\d+(?:\.\d+){0,3})(?:([-_]alpha|[-_]beta|[-_]pre|[-_]rc|[-_]p|-)(\d+(?:\.\d+){0,3})?)?(?:([-_]alpha|[-_]beta|[-_]pre|[-_]rc|[-_]p|-)(\d+(?:\.\d+){0,3})?)?(?:(\+build)(\d*))?$`)
 
+// Version represents a version:
+// Columns consisting of up to four unsigned integers (1.2.4.99)
+// optionally further divided into 'release' and 'specifier' (1.2-634.0-99.8).
 type Version struct {
 	// 0–3: version, 4: releaseType, 5–8: releaseVer, 9: releaseSpecifier, 10–14: specifier
 	version [14]int
 	build   int
 }
 
+// NewVersion translates the given string, which must be free of whitespace,
+// into a single Version.
 func NewVersion(str string) (*Version, error) {
 	ver := &Version{}
 	err := ver.Parse(str)
 	return ver, err
 }
 
-func (ver *Version) Parse(str string) error {
+// Parse reads a string into the given version, overwriting any existing values.
+func (t *Version) Parse(str string) error {
 	allMatches := verRegexp.FindAllStringSubmatch(str, -1)
 	if allMatches == nil {
 		return errors.New("Given string does not resemble a Version.")
@@ -90,30 +98,30 @@ func (ver *Version) Parse(str string) error {
 	if err != nil {
 		return err
 	}
-	copy(ver.version[:], n)
+	copy(t.version[:], n)
 
 	// release
 	if m[2] != "" {
-		ver.version[idxReleaseType] = releaseValue[strings.Trim(m[2], "-_")]
+		t.version[idxReleaseType] = releaseValue[strings.Trim(m[2], "-_")]
 	}
 	if m[3] != "" {
 		n, err := newDotDelimitedNumber(m[3])
 		if err != nil {
 			return err
 		}
-		copy(ver.version[idxRelease:], n)
+		copy(t.version[idxRelease:], n)
 	}
 
 	// release specifier
 	if m[4] != "" {
-		ver.version[idxSpecifierType] = releaseValue[strings.Trim(m[4], "-_")]
+		t.version[idxSpecifierType] = releaseValue[strings.Trim(m[4], "-_")]
 	}
 	if m[5] != "" {
 		n, err := newDotDelimitedNumber(m[5])
 		if err != nil {
 			return err
 		}
-		copy(ver.version[idxSpecifier:], n)
+		copy(t.version[idxSpecifier:], n)
 	}
 
 	// build
@@ -122,13 +130,14 @@ func (ver *Version) Parse(str string) error {
 		if err != nil {
 			return err
 		}
-		ver.build = i
+		t.build = i
 	}
 
 	return nil
 }
 
-// Returns sign(a - b).
+// signDelta returns the signum of the difference,
+// which' precision can be limited by 'cuttofIdx'.
 func signDelta(a, b [14]int, cutoffIdx int) int8 {
 	for i := range a {
 		if i >= cutoffIdx {
@@ -143,23 +152,26 @@ func signDelta(a, b [14]int, cutoffIdx int) int8 {
 	return 0
 }
 
-// Convenience function for sorting.
+// Less is a convenience function for sorting.
 func (t *Version) Less(o *Version) bool {
 	sd := signDelta(t.version, o.version, 15)
 	return sd < 0 || (sd == 0 && t.build < o.build)
 }
 
-// Limited to version, (pre-)release type and (pre-)release version.
+// limitedLess compares two Versions
+// with a precision limited to version, (pre-)release type and (pre-)release version.
+//
 // Commutative.
 func (t *Version) limitedLess(o *Version) bool {
 	return signDelta(t.version, o.version, idxSpecifierType) < 0
 }
 
-// Equality limited to version, (pre-)release type and (pre-)release version.
-// For example, 1.0.0-pre and 1.0.0-rc are not the same, but
-// 1.0.0-beta-pre3 and 1.0.0-beta-pre5 are equal.
-// Permits 'patch levels', regarding 1.0.0 equal to 1.0.0-p1.
-// Non-commutative: 1.0.0-p1 does not equal 1.0.0!
+// LimitedEqual returns true of two versions share the same prefix,
+// which is the "actual version", (pre-)release type, and (pre-)release version.
+// The exception are patch-levels, which are always equal.
+//
+// Use this, for example, to tell a beta from a regular version;
+// or to accept a patched version as regular version.
 func (t *Version) LimitedEqual(o *Version) bool {
 	if t.version[idxReleaseType] == common && o.version[idxReleaseType] > common {
 		return t.sharesPrefixWith(o)
@@ -167,11 +179,13 @@ func (t *Version) LimitedEqual(o *Version) bool {
 	return signDelta(t.version, o.version, idxSpecifierType) == 0
 }
 
-// Use this to exclude pre-releases.
-func (v *Version) IsAPreRelease() bool {
-	return v.version[idxReleaseType] < common
+// IsAPreRelease is used to discriminate pre-releases.
+func (t *Version) IsAPreRelease() bool {
+	return t.version[idxReleaseType] < common
 }
 
+// sharesPrefixWith compares two Versions with a fixed limited precision.
+//
 // A 'prefix' is the major, minor, patch and revision number.
 // For example: 1.2.3.4…
 func (t *Version) sharesPrefixWith(o *Version) bool {

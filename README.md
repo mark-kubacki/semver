@@ -17,19 +17,19 @@ Licensed under a [BSD-style license](LICENSE).
 Usage
 -----
 ```bash
-$ go get -v github.com/wmark/semver
+$ go get -v -d github.com/wmark/semver
 ```
 
 ```go
-import github.com/wmark/semver
+import "github.com/wmark/semver"
 
 v1, err := semver.NewVersion("1.2.3-beta")
 v2, err := semver.NewVersion("2.0.0-alpha20140805.456-rc3+build1800")
-v1.Less(v2)
+v1.Less(v2) // true
 
 r1, err := NewRange("~1.2")
 r1.Contains(v1)      // true
-r1.IsSatisfiedBy(v1) // false
+r1.IsSatisfiedBy(v1) // false (rejects pre-releases: alphas, betas…)
 ```
 
 Also check the [GoDocs](http://godoc.org/github.com/wmark/semver)
@@ -52,6 +52,9 @@ Therefore it is:
     9. A pre-release version MAY be denoted by appending a hyphen and a series of
     dot separated identifiers immediately following the patch version. […]
 
+Usage Note
+----------
+
 Most *NodeJS* authors write **~1.2.3** where **>=1.2.3** would fit better.
 *~1.2.3* is ```Range(">=1.2.3 <1.3.0")``` and excludes versions such as *1.4.0*,
 which almost always work.
@@ -62,7 +65,8 @@ Contribute
 Please open issues with minimal examples of what is going wrong. For example:
 
     Mark, this does not work but I feel that it should:
-    ```golang
+
+    ```go
     v, err := semver.Version("17.1o0")
     # yields an error
     # I expected 17.100
@@ -71,7 +75,8 @@ Please open issues with minimal examples of what is going wrong. For example:
 Please write a test case with your expectations, if you ask for a new feature.
 
     I'd like **semver.Range** to support interface **expvar.Var**, like this:
-    ```golang
+
+    ```go
     Convey("Range implements interface's expvar.Var…", t, func() {
       r, _ := NewRange("1.2.3")
       
@@ -82,5 +87,5 @@ Please write a test case with your expectations, if you ask for a new feature.
     ```
 
 Pull requests are welcome.
-Please add your name and email address to file *AUTHORS* and/or *CONTRIBUTORS*.
+Please add your name and email address to a file *AUTHORS* and/or *CONTRIBUTORS*.
 Thanks!

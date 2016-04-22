@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+// Range is a subset of the universe of Versions: It can have a lower and upper boundary.
+// For example, "1.2–2.0" is such a Range, with two boundaries.
 type Range struct {
 	lower       *Version
 	equalsLower bool
@@ -16,6 +18,7 @@ type Range struct {
 	equalsUpper bool
 }
 
+// NewRange translates a string into a Range.
 func NewRange(str string) (*Range, error) {
 	if str == "*" || str == "x" || str == "" {
 		// an empty Range contains everything
@@ -37,7 +40,6 @@ func NewRange(str string) (*Range, error) {
 			return newRangeByShortcut("^" + str)
 		}
 	}
-
 	vr := new(Range)
 	if !isNaturalRange {
 		err := vr.setBound(str)
@@ -48,20 +50,19 @@ func NewRange(str string) (*Range, error) {
 		if strings.Contains(str, delimiter) {
 			parts := strings.Split(str, delimiter)
 			if len(parts) == 2 {
-				if parts[0][0] == '>' {
+				if strings.HasPrefix(parts[0], ">") {
 					vr.setBound(parts[0])
 				} else {
 					vr.setBound(">=" + parts[0])
 				}
-				if parts[1][0] == '<' {
+				if strings.HasPrefix(parts[1], "<") {
 					vr.setBound(parts[1])
 				} else {
 					vr.setBound("<=" + parts[1])
 				}
 				return vr, nil
-			} else {
-				return nil, errors.New("Range contains more than two elements.")
 			}
+			return nil, errors.New("Range contains more than two elements.")
 		}
 	}
 
@@ -88,6 +89,8 @@ func (r *Range) setBound(str string) error {
 	return nil
 }
 
+// newRangeByShortcut covers the special case of Ranges whose boundaries
+// are declared using prefixes.
 func newRangeByShortcut(str string) (*Range, error) {
 	t := strings.TrimLeft(str, "~^")
 	num, err := NewVersion(t)
@@ -119,7 +122,7 @@ func newRangeByShortcut(str string) (*Range, error) {
 	return r, nil
 }
 
-// Checks if a Version falls into a Range.
+// Contains returns true if a Version is inside this Range.
 func (r *Range) Contains(v *Version) bool {
 	if v == nil {
 		return false
@@ -132,7 +135,9 @@ func (r *Range) Contains(v *Version) bool {
 	return r.satisfiesLowerBound(v) && r.satisfiesUpperBound(v)
 }
 
-// Works like Contains, but rejects pre-releases if neither of the bounds is a pre-release.
+// IsSatisfiedBy works like Contains,
+// but rejects pre-releases if neither of the bounds is a pre-release.
+//
 // Use this in the context of pulling in packages because it follows the spirit of §9 SemVer.
 // Also see https://github.com/npm/node-semver/issues/64
 func (r *Range) IsSatisfiedBy(v *Version) bool {
@@ -181,7 +186,8 @@ func (r *Range) satisfiesUpperBound(v *Version) bool {
 	return v.limitedLess(r.upper) && !equal
 }
 
-// Convenience function for former NodeJS developers.
+// Satisfies is a convenience function for former NodeJS developers
+// which works on two strings.
 func Satisfies(aVersion, aRange string) (bool, error) {
 	v, err := NewVersion(aVersion)
 	if err != nil {
