@@ -1,0 +1,4 @@
+*.go      text eol=lf core.whitespace whitespace=indent-with-non-tab,trailing-space,tabwidth=4
+
+*.yml     text eol=lf core.whitespace whitespace=tab-in-indent,trailing-space,tabwidth=2
+.git*     text eol=auto core.whitespace whitespace=trailing-space
