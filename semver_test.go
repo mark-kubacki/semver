@@ -11,35 +11,36 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestDotDelimitedNumber(t *testing.T) {
-	goodVer := "1.3.8"
-	badVer := "a.b.c"
-
-	Convey("Given an acceptable Version string", t, func() {
-		v, err := newDotDelimitedNumber(goodVer)
-
-		Convey("convert it correctly", func() {
+func TestNewVersion(t *testing.T) {
+	Convey("NewVersion works with…", t, FailureContinues, func() {
+		Convey("1.23.8", func() {
+			refVer, err := NewVersion("1.23.8")
 			So(err, ShouldBeNil)
-			So(len(v), ShouldEqual, 3)
-			So(v, ShouldResemble, dotDelimitedNumber([]int{1, 3, 8}))
-		})
-	})
-
-	Convey("Given a mal-formed Version string", t, func() {
-		v, err := newDotDelimitedNumber(badVer)
-
-		Convey("yield an error", func() {
-			So(err, ShouldNotBeNil)
+			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, common, 0, 0, 0, 0, common, 0, 0, 0, 0})
 		})
 
-		Convey("return an incomplete sequence", func() {
-			So(len(v), ShouldBeLessThan, 3)
+		Convey("1.23.8-alpha", func() {
+			refVer, err := NewVersion("1.23.8-alpha")
+			So(err, ShouldBeNil)
+			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, alpha, 0, 0, 0, 0, common, 0, 0, 0, 0})
+		})
+
+		Convey("1.23.8-p3", func() {
+			refVer, err := NewVersion("1.23.8-p3")
+			So(err, ShouldBeNil)
+			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, patch, 3, 0, 0, 0, common, 0, 0, 0, 0})
+		})
+
+		Convey("1.23.8-3", func() {
+			refVer, err := NewVersion("1.23.8-3")
+			So(err, ShouldBeNil)
+			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, common, 3, 0, 0, 0, common, 0, 0, 0, 0})
 		})
 	})
 }
 
 func TestVersion(t *testing.T) {
-	Convey("Version 1.3.8 should be part of Version…", t, func() {
+	Convey("Version 1.3.8 should be part of Version…", t, FailureContinues, func() {
 		v := []int{1, 3, 8, 0}
 
 		Convey("1.3.8", func() {
@@ -50,14 +51,16 @@ func TestVersion(t *testing.T) {
 
 		Convey("1.3.8+build20140722", func() {
 			refVer, err := NewVersion("1.3.8+build20140722")
-			So(err, ShouldBeNil)
 			So(refVer.version[:4], ShouldResemble, v)
+			So(refVer.build, ShouldEqual, 20140722)
+			So(err, ShouldBeNil)
 		})
 
 		Convey("1.3.8+build2014", func() {
 			refVer, err := NewVersion("1.3.8+build2014")
-			So(err, ShouldBeNil)
 			So(refVer.version[:4], ShouldResemble, v)
+			So(refVer.build, ShouldEqual, 2014)
+			So(err, ShouldBeNil)
 		})
 
 		Convey("1.3.8-alpha", func() {
@@ -79,7 +82,7 @@ func TestVersion(t *testing.T) {
 		})
 
 		Convey("1.3.8-r3", func() {
-			refVer, err := NewVersion("1.3.8-p3")
+			refVer, err := NewVersion("1.3.8-r3")
 			So(err, ShouldBeNil)
 			So(refVer.version[:4], ShouldResemble, v)
 		})
@@ -158,6 +161,10 @@ func TestVersion(t *testing.T) {
 			Convey("1.0.0-p0 < 1.0.0-p1", func() {
 				v1, _ := NewVersion("1.0.0-p0")
 				v2, _ := NewVersion("1.0.0-p1")
+
+				So(v1.version, ShouldResemble, [...]int{1, 0, 0, 0, patch, 0, 0, 0, 0, common, 0, 0, 0, 0})
+				So(v2.version, ShouldResemble, [...]int{1, 0, 0, 0, patch, 1, 0, 0, 0, common, 0, 0, 0, 0})
+
 				So(v1.Less(v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
@@ -173,9 +180,9 @@ func TestVersion(t *testing.T) {
 		})
 
 		Convey("with builds", func() {
-			Convey("1.0.0+build14 < 1.0.0+build15", func() {
-				v1, _ := NewVersion("1.0.0+build14")
-				v2, _ := NewVersion("1.0.0+build15")
+			Convey("1.0.0+build1 < 1.0.0+build2", func() {
+				v1, _ := NewVersion("1.0.0+build1")
+				v2, _ := NewVersion("1.0.0+build2")
 				So(v1.Less(v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})

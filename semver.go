@@ -8,9 +8,7 @@ package semver
 
 import (
 	"errors"
-	"regexp"
 	"strconv"
-	"strings"
 )
 
 // Errors that are thrown when translating from a string.
@@ -19,31 +17,14 @@ var (
 	ErrTooMuchColumns       = errors.New("Version consists of too much columns")
 )
 
-type dotDelimitedNumber []int
-
-func newDotDelimitedNumber(str string) (dotDelimitedNumber, error) {
-	strSequence := strings.Split(str, ".")
-	if len(strSequence) > 4 {
-		return nil, ErrTooMuchColumns
-	}
-	numSequence := make(dotDelimitedNumber, 0, len(strSequence))
-	for _, s := range strSequence {
-		i, err := strconv.Atoi(s)
-		if err != nil {
-			return numSequence, err
-		}
-		numSequence = append(numSequence, i)
-	}
-	return numSequence, nil
-}
-
-// alpha = -4, beta = -3, pre = -2, rc = -1, common = 0, patch = 1
+// alpha = -4, beta = -3, pre = -2, rc = -1, common = 0, revision = 1, patch = 2
 const (
 	alpha = iota - 4
 	beta
 	pre
 	rc
 	common
+	revision
 	patch
 )
 
@@ -55,11 +36,12 @@ const (
 )
 
 var releaseDesc = map[int]string{
-	alpha: "alpha",
-	beta:  "beta",
-	pre:   "pre",
-	rc:    "rc",
-	patch: "p",
+	alpha:    "alpha",
+	beta:     "beta",
+	pre:      "pre",
+	rc:       "rc",
+	revision: "r",
+	patch:    "p",
 }
 
 var releaseValue = map[string]int{
@@ -68,10 +50,9 @@ var releaseValue = map[string]int{
 	"pre":   pre,
 	"":      pre,
 	"rc":    rc,
+	"r":     revision,
 	"p":     patch,
 }
-
-var verRegexp = regexp.MustCompile(`^(\d+(?:\.\d+){0,3})(?:([-_]alpha|[-_]beta|[-_]pre|[-_]rc|[-_]p|-)(\d+(?:\.\d+){0,3})?)?(?:([-_]alpha|[-_]beta|[-_]pre|[-_]rc|[-_]p|-)(\d+(?:\.\d+){0,3})?)?(?:(\+build)(\d*))?$`)
 
 // Version represents a version:
 // Columns consisting of up to four unsigned integers (1.2.4.99)
@@ -92,51 +73,98 @@ func NewVersion(str string) (*Version, error) {
 
 // Parse reads a string into the given version, overwriting any existing values.
 func (t *Version) Parse(str string) error {
-	allMatches := verRegexp.FindAllStringSubmatch(str, -1)
-	if allMatches == nil {
-		return ErrInvalidVersionString
-	}
+	var fromIdx, fromLen, fieldNum int
+	var isAlpha bool
+	var strlen = len(str)
 
-	m := allMatches[0]
-
-	// version
-	n, err := newDotDelimitedNumber(m[1])
-	if err != nil {
-		return err
-	}
-	copy(t.version[:], n)
-
-	// release
-	if m[2] != "" {
-		t.version[idxReleaseType] = releaseValue[strings.Trim(m[2], "-_")]
-	}
-	if m[3] != "" {
-		n, err := newDotDelimitedNumber(m[3])
-		if err != nil {
-			return err
+	for idx, r := range str {
+		// consume
+		if isAlpha { // a-z
+			if 'a' <= r && r <= 'z' {
+				fromLen++
+				if idx+1 < strlen {
+					continue
+				}
+			}
+		} else { // numbers
+			if '0' <= r && r <= '9' {
+				fromLen++
+				if idx+1 < strlen {
+					continue
+				}
+			}
 		}
-		copy(t.version[idxRelease:], n)
-	}
 
-	// release specifier
-	if m[4] != "" {
-		t.version[idxSpecifierType] = releaseValue[strings.Trim(m[4], "-_")]
-	}
-	if m[5] != "" {
-		n, err := newDotDelimitedNumber(m[5])
-		if err != nil {
-			return err
-		}
-		copy(t.version[idxSpecifier:], n)
-	}
+		// convert
+		if isAlpha {
+			switch {
+			case fieldNum <= idxReleaseType:
+				fieldNum = idxReleaseType
+			case fieldNum <= idxSpecifierType:
+				fieldNum = idxSpecifierType
+			default:
+				return ErrInvalidVersionString
+			}
 
-	// build
-	if m[7] != "" {
-		i, err := strconv.Atoi(m[7])
-		if err != nil {
-			return err
+			typ, known := releaseValue[str[fromIdx:fromIdx+fromLen]]
+			if !known {
+				return ErrInvalidVersionString
+			}
+			t.version[fieldNum] = typ
+		} else {
+			if fieldNum == idxReleaseType || fieldNum == idxSpecifierType {
+				return ErrTooMuchColumns
+			}
+
+			n, err := strconv.Atoi(str[fromIdx : fromIdx+fromLen])
+			if err != nil {
+				return err
+			}
+			t.version[fieldNum] = n
 		}
-		t.build = i
+		fieldNum++
+		fromLen = 0
+
+		switch r {
+		case '.':
+			fromIdx = idx + 1
+			isAlpha = false
+		case '-', '_':
+			fromIdx = idx + 1
+			if strlen < fromIdx {
+				return ErrInvalidVersionString
+			}
+			isAlpha = 'a' <= str[fromIdx] && str[fromIdx] <= 'z'
+			switch {
+			case fieldNum <= idxReleaseType:
+				fieldNum = idxReleaseType
+			case fieldNum <= idxSpecifierType:
+				fieldNum = idxSpecifierType
+			default:
+				return ErrInvalidVersionString
+			}
+			if !isAlpha {
+				fieldNum++
+			}
+		case '+': // special case: build
+			if strlen < idx+7 || str[idx:idx+6] != "+build" {
+				return errors.New("Version has no suffix +build and numbers")
+			}
+			n, err := strconv.Atoi(str[idx+6:])
+			if err != nil {
+				return err
+			}
+			t.build = n
+			return nil
+		default:
+			fromIdx = idx
+			isAlpha = 'a' <= r && r <= 'z'
+			fromLen = 1
+		}
+
+		if fieldNum > 14 {
+			return errors.New("Version is too long")
+		}
 	}
 
 	return nil

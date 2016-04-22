@@ -41,16 +41,11 @@ Please Note
 
 It is, ordered from lowest to highest:
 
-    alpha < beta < pre < rc < (no release type/»common«) < p
+    alpha < beta < pre < rc < (no release type/»common«) < r (revision) < p
 
 Therefore it is:
 
-    Version("1.0.0-pre1") ≙ Version("1.0.0-1") < Version("1.0.0") < Version("1.0.0-p1")
-
-… because the SemVer specification says:
-
-    9. A pre-release version MAY be denoted by appending a hyphen and a series of
-    dot separated identifiers immediately following the patch version. […]
+    Version("1.0.0-pre1") < Version("1.0.0") < Version("1.0.0-p1")
 
 Usage Note
 ----------
