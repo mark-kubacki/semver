@@ -13,12 +13,18 @@ import (
 	"strings"
 )
 
+// Errors that are thrown when translating from a string.
+var (
+	ErrInvalidVersionString = errors.New("Given string does not resemble a Version")
+	ErrTooMuchColumns       = errors.New("Version consists of too much columns")
+)
+
 type dotDelimitedNumber []int
 
 func newDotDelimitedNumber(str string) (dotDelimitedNumber, error) {
 	strSequence := strings.Split(str, ".")
 	if len(strSequence) > 4 {
-		return nil, errors.New("too much columns on that number")
+		return nil, ErrTooMuchColumns
 	}
 	numSequence := make(dotDelimitedNumber, 0, len(strSequence))
 	for _, s := range strSequence {
@@ -88,7 +94,7 @@ func NewVersion(str string) (*Version, error) {
 func (t *Version) Parse(str string) error {
 	allMatches := verRegexp.FindAllStringSubmatch(str, -1)
 	if allMatches == nil {
-		return errors.New("Given string does not resemble a Version.")
+		return ErrInvalidVersionString
 	}
 
 	m := allMatches[0]

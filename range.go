@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+// Errors which can be encountered when parsing into a Range.
+var (
+	ErrTooManyBoundaries           = errors.New("Range contains more than two elements")
+	ErrUnsupportedShortcutNotation = errors.New("Unsupported shortcut notation for Range")
+)
+
 // Range is a subset of the universe of Versions: It can have a lower and upper boundary.
 // For example, "1.2–2.0" is such a Range, with two boundaries.
 type Range struct {
@@ -62,7 +68,7 @@ func NewRange(str string) (*Range, error) {
 				}
 				return vr, nil
 			}
-			return nil, errors.New("Range contains more than two elements.")
+			return nil, ErrTooManyBoundaries
 		}
 	}
 
@@ -116,7 +122,7 @@ func newRangeByShortcut(str string) (*Range, error) {
 		r.upper.version[0] = r.lower.version[0]
 		r.upper.version[1] = r.lower.version[1] + 1
 	default:
-		return nil, errors.New("Unsupported shortcut notation for Range.")
+		return nil, ErrUnsupportedShortcutNotation
 	}
 
 	return r, nil
