@@ -16,10 +16,12 @@ Does not use regular expressions.
 
 ```
 BenchmarkHashicorpNewVersion-24           500000              2613 ns/op
-BenchmarkSemverNewVersion-24             5000000               351 ns/op
+BenchmarkBlangMake-24                    1000000              1167 ns/op
+BenchmarkSemverNewVersion-24             5000000               351 ns/op ←
 
 BenchmarkHashicorpNewConstraint-24        100000             11871 ns/op
-BenchmarkSemverNewRange-24               1000000              2626 ns/op
+BenchmarkBlangParseRange-24               300000              6074 ns/op
+BenchmarkSemverNewRange-24               1000000              2626 ns/op ←
 ```
 
 Licensed under a [BSD-style license](LICENSE).
