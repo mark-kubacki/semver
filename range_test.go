@@ -643,3 +643,13 @@ func Example_full() {
 	// true
 	// false
 }
+
+var benchR, benchRErr = NewRange(">=1.2.3 <=1.3.0")
+
+func BenchmarkSemverNewRange(b *testing.B) {
+	var r, e = NewRange(">=1.2.3 <=1.3.0")
+	for n := 0; n < b.N; n++ {
+		r, e = NewRange(">=1.2.3 <=1.3.0")
+	}
+	benchR, benchRErr = r, e
+}

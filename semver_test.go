@@ -284,3 +284,13 @@ func ExampleLimitedEqual_third() {
 	// false
 	// true
 }
+
+var benchV, benchErr = NewVersion("1.2.3-beta")
+
+func BenchmarkSemverNewVersion(b *testing.B) {
+	var v, e = NewVersion("1.2.3-beta")
+	for n := 0; n < b.N; n++ {
+		v, e = NewVersion("1.2.3-beta")
+	}
+	benchV, benchErr = v, e
+}
