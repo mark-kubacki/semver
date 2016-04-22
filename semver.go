@@ -73,68 +73,49 @@ func NewVersion(str string) (*Version, error) {
 
 // Parse reads a string into the given version, overwriting any existing values.
 func (t *Version) Parse(str string) error {
-	var fromIdx, fromLen, fieldNum int
-	var isAlpha bool
+	var idx, toIdx, fieldNum, column int
 	var strlen = len(str)
 
-	for idx, r := range str {
-		// consume
-		if isAlpha { // a-z
-			if 'a' <= r && r <= 'z' {
-				fromLen++
-				if idx+1 < strlen {
-					continue
-				}
-			}
-		} else { // numbers
-			if '0' <= r && r <= '9' {
-				fromLen++
-				if idx+1 < strlen {
-					continue
-				}
-			}
-		}
-
-		// convert
-		if isAlpha {
-			switch {
-			case fieldNum <= idxReleaseType:
-				fieldNum = idxReleaseType
-			case fieldNum <= idxSpecifierType:
-				fieldNum = idxSpecifierType
-			default:
-				return ErrInvalidVersionString
-			}
-
-			typ, known := releaseValue[str[fromIdx:fromIdx+fromLen]]
-			if !known {
-				return ErrInvalidVersionString
-			}
-			t.version[fieldNum] = typ
-		} else {
-			if fieldNum == idxReleaseType || fieldNum == idxSpecifierType {
+	for idx < strlen {
+		r := str[idx]
+		switch {
+		case '0' <= r && r <= '9':
+			if column == 4 {
 				return ErrTooMuchColumns
 			}
+			column++
+			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
+				p := str[toIdx]
+				if !('0' <= p && p <= '9') {
+					break
+				}
+			}
 
-			n, err := strconv.Atoi(str[fromIdx : fromIdx+fromLen])
+			if fieldNum == idxReleaseType || fieldNum == idxSpecifierType {
+				fieldNum++
+			}
+
+			n, err := strconv.Atoi(str[idx:toIdx])
 			if err != nil {
 				return err
 			}
 			t.version[fieldNum] = n
-		}
-		fieldNum++
-		fromLen = 0
 
-		switch r {
-		case '.':
-			fromIdx = idx + 1
-			isAlpha = false
-		case '-', '_':
-			fromIdx = idx + 1
-			if strlen < fromIdx {
+			idx = toIdx
+			fieldNum++
+		case 'a' <= r && r <= 'z':
+			column = 0
+			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
+				p := str[toIdx]
+				if !('a' <= p && p <= 'z') {
+					break
+				}
+			}
+
+			typ, known := releaseValue[str[idx:toIdx]]
+			if !known {
 				return ErrInvalidVersionString
 			}
-			isAlpha = 'a' <= str[fromIdx] && str[fromIdx] <= 'z'
 			switch {
 			case fieldNum <= idxReleaseType:
 				fieldNum = idxReleaseType
@@ -143,10 +124,23 @@ func (t *Version) Parse(str string) error {
 			default:
 				return ErrInvalidVersionString
 			}
-			if !isAlpha {
-				fieldNum++
+			t.version[fieldNum] = typ
+
+			idx = toIdx
+			fieldNum++
+		case r == '.':
+			idx++
+		case r == '-' || r == '_':
+			idx++
+			switch {
+			case fieldNum <= idxReleaseType:
+				fieldNum = idxReleaseType
+			case fieldNum <= idxSpecifierType:
+				fieldNum = idxSpecifierType
+			default:
+				return ErrInvalidVersionString
 			}
-		case '+': // special case: build
+		case r == '+':
 			if strlen < idx+7 || str[idx:idx+6] != "+build" {
 				return errors.New("Version has no suffix +build and numbers")
 			}
@@ -157,9 +151,7 @@ func (t *Version) Parse(str string) error {
 			t.build = n
 			return nil
 		default:
-			fromIdx = idx
-			isAlpha = 'a' <= r && r <= 'z'
-			fromLen = 1
+			return ErrInvalidVersionString
 		}
 
 		if fieldNum > 14 {

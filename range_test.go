@@ -555,7 +555,7 @@ func TestSatisfies(t *testing.T) {
 		Convey("works with valid input", func() {
 			t, _ := Satisfies("1.2.3", "^1.2.2")
 			So(t, ShouldBeTrue)
-			t, _ = Satisfies("1.2.3-2", "^1.2.3-1")
+			t, _ = Satisfies("1.2.3-pre2", "^1.2.3-pre1")
 			So(t, ShouldBeTrue)
 		})
 
@@ -575,29 +575,29 @@ func TestSatisfies(t *testing.T) {
 	Convey("Range.IsSatisfiedBy…", t, func() {
 
 		Convey("rejects pre-releases", func() {
-			t, _ := Satisfies("1.2.3-1", "^1.2.2")
+			t, _ := Satisfies("1.2.3-pre1", "^1.2.2")
 			So(t, ShouldBeFalse)
-			t, _ = Satisfies("1.2.4-1", "^1.2.2-1")
+			t, _ = Satisfies("1.2.4-pre1", "^1.2.2-pre1")
 			So(t, ShouldBeFalse)
-			t, _ = Satisfies("1.2.3-1", "<1.2.3")
+			t, _ = Satisfies("1.2.3-pre1", "<1.2.3")
 			So(t, ShouldBeFalse)
 		})
 
 		Convey("accepts pre-releases for a pre-release upper bound with the same prefix", func() {
-			t, _ := Satisfies("1.2.3-1", "<1.2.3-1")
+			t, _ := Satisfies("1.2.3-pre1", "<1.2.3-pre1")
 			So(t, ShouldBeFalse)
-			t, _ = Satisfies("1.2.3-1", "<1.2.3-2")
+			t, _ = Satisfies("1.2.3-pre1", "<1.2.3-pre2")
 			So(t, ShouldBeTrue)
-			t, _ = Satisfies("1.2.3-1", "<=1.2.3-1")
+			t, _ = Satisfies("1.2.3-pre1", "<=1.2.3-pre1")
 			So(t, ShouldBeTrue)
 		})
 
 		Convey("accepts pre-releases for a pre-release lower bound with the same prefix", func() {
-			t, _ := Satisfies("1.2.3-1", ">1.2.3-1")
+			t, _ := Satisfies("1.2.3-pre1", ">1.2.3-pre1")
 			So(t, ShouldBeFalse)
-			t, _ = Satisfies("1.2.3-2", ">1.2.3-1")
+			t, _ = Satisfies("1.2.3-pre2", ">1.2.3-pre1")
 			So(t, ShouldBeTrue)
-			t, _ = Satisfies("1.2.3-1", ">=1.2.3-1")
+			t, _ = Satisfies("1.2.3-pre1", ">=1.2.3-pre1")
 			So(t, ShouldBeTrue)
 		})
 	})

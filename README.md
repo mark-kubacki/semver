@@ -12,6 +12,16 @@ A library for parsing and processing of *Versions* and *Ranges* in:
 * Gentoo's ebuild format
 * NPM
 
+Does not use regular expressions.
+
+```
+BenchmarkHashicorpNewVersion-24           500000              2613 ns/op
+BenchmarkSemverNewVersion-24             5000000               351 ns/op
+
+BenchmarkHashicorpNewConstraint-24        100000             11871 ns/op
+BenchmarkSemverNewRange-24               1000000              2626 ns/op
+```
+
 Licensed under a [BSD-style license](LICENSE).
 
 Usage
