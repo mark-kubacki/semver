@@ -145,6 +145,7 @@ func (t *Version) Parse(str string) error {
 // signDelta returns the signum of the difference,
 // which' precision can be limited by 'cuttofIdx'.
 func signDelta(a, b [14]int, cutoffIdx int) int8 {
+	//fmt.Println(a, b)
 	for i := range a {
 		if i >= cutoffIdx {
 			return 0
@@ -156,6 +157,17 @@ func signDelta(a, b [14]int, cutoffIdx int) int8 {
 		}
 	}
 	return 0
+}
+
+// Compare computes the difference between two Versions and returns its signum.
+//
+//   1  if a > b
+//   0  if a == b
+//   -1 if a < b
+//
+// The 'build' is not compared.
+func Compare(a, b Version) int {
+	return int(signDelta(a.version, b.version, 14))
 }
 
 // Less is a convenience function for sorting.

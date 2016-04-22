@@ -5,6 +5,7 @@
 package semver
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -607,4 +608,38 @@ func TestSatisfies(t *testing.T) {
 		So(r.Contains(v), ShouldBeTrue)
 		So(r.IsSatisfiedBy(v), ShouldBeFalse)
 	})
+}
+
+func Example_range() {
+	var (
+		r, _      = NewRange("1.2–2.0")
+		beyond, _ = NewVersion("1.0")
+		lower, _  = NewVersion("1.2")
+		upper, _  = NewVersion("2.0")
+	)
+
+	fmt.Println(Compare(*r.GetLowerBoundary(), *beyond))
+	fmt.Println(Compare(*r.GetLowerBoundary(), *lower))
+	fmt.Println(Compare(*r.GetLowerBoundary(), *upper))
+	fmt.Println(Compare(*r.GetUpperBoundary(), *upper))
+	// Output:
+	// 1
+	// 0
+	// -1
+	// 0
+}
+
+func Example_full() {
+	v1, _ := NewVersion("1.2.3-beta")
+	v2, _ := NewVersion("2.0.0-alpha20140805.456-rc3+build1800")
+	fmt.Println(v1.Less(v2))
+
+	r1, _ := NewRange("~1.2")
+	fmt.Println(r1.Contains(v1))
+	fmt.Println(r1.IsSatisfiedBy(v1)) // rejects pre-releases: alphas, betas…
+
+	// Output:
+	// true
+	// true
+	// false
 }

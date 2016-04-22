@@ -5,6 +5,7 @@
 package semver
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -248,4 +249,38 @@ func TestVersionOrder(t *testing.T) {
 		})
 	})
 
+}
+
+func ExampleLimitedEqual_first() {
+	var (
+		pre, _ = NewVersion("1.0.0-pre")
+		rc, _  = NewVersion("1.0.0-rc")
+	)
+
+	fmt.Println(pre.LimitedEqual(rc))
+	// Output: false
+}
+
+func ExampleLimitedEqual_second() {
+	var (
+		a, _ = NewVersion("1.0.0-beta-pre3")
+		b, _ = NewVersion("1.0.0-beta-pre5")
+	)
+
+	fmt.Println(a.LimitedEqual(b))
+	// Output: true
+}
+
+func ExampleLimitedEqual_third() {
+	var (
+		regular, _ = NewVersion("1.0.0")
+		patched, _ = NewVersion("1.0.0-p1")
+	)
+
+	fmt.Println(patched.LimitedEqual(regular))
+	fmt.Println(regular.LimitedEqual(patched))
+
+	// Output:
+	// false
+	// true
 }

@@ -128,6 +128,16 @@ func newRangeByShortcut(str string) (*Range, error) {
 	return r, nil
 }
 
+// GetLowerBoundary translates a boundary into a Version.
+func (r *Range) GetLowerBoundary() *Version {
+	return r.lower
+}
+
+// GetUpperBoundary translates a boundary into a Version.
+func (r *Range) GetUpperBoundary() *Version {
+	return r.upper
+}
+
 // Contains returns true if a Version is inside this Range.
 func (r *Range) Contains(v *Version) bool {
 	if v == nil {
