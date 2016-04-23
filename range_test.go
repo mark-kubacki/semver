@@ -86,7 +86,11 @@ func TestRangeConstruction(t *testing.T) {
 		ver, _ := NewVersion("1.2.3")
 
 		Convey("specific Range 1.2.3", func() {
-			verRange, _ := NewRange("1.2.3")
+			verRange, err := NewRange("1.2.3")
+			So(err, ShouldBeNil)
+			if err != nil {
+				return
+			}
 			So(verRange.lower, ShouldResemble, ver)
 		})
 	})

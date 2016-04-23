@@ -11,6 +11,7 @@ import (
 
 // Errors which can be encountered when parsing into a Range.
 var (
+	ErrInvalidRangeString          = errors.New("Invalid Range string")
 	ErrTooManyBoundaries           = errors.New("Range contains more than two elements")
 	ErrUnsupportedShortcutNotation = errors.New("Unsupported shortcut notation for Range")
 )
@@ -30,16 +31,46 @@ func NewRange(str string) (*Range, error) {
 		// an empty Range contains everything
 		return new(Range), nil
 	}
+	isNaturalRange := true
 	if strings.HasSuffix(str, ".x") || strings.HasSuffix(str, ".*") {
 		str = strings.TrimRight(str, ".x*")
+		isNaturalRange = false
 	}
 	if str[0] == '^' || str[0] == '~' {
 		return newRangeByShortcut(str)
 	}
 
-	isNaturalRange := strings.ContainsAny(str, " –")
+	var leftEnd, rightStart, leftDotCount int
+	var upperBound, lowerBound bool = true, true
+	for i, r := range str {
+		if r == '.' {
+			leftDotCount++
+		}
+		if r == ' ' || r == '–' || r == ',' {
+			if leftEnd == 0 {
+				leftEnd = i
+			}
+			rightStart = i
+			continue
+		} else {
+			if rightStart != 0 {
+				rightStart++
+				if r != '-' {
+					break
+				}
+			}
+		}
+		switch r {
+		case '<', '≤':
+			lowerBound = false
+		case '>', '≥':
+			upperBound = false
+		}
+	}
+
+	isNaturalRange = isNaturalRange && leftEnd != rightStart && (len(str)-rightStart) > 0
 	if !isNaturalRange {
-		switch strings.Count(str, ".") {
+		switch leftDotCount {
 		case 1:
 			return newRangeByShortcut("~" + str)
 		case 0:
@@ -47,47 +78,47 @@ func NewRange(str string) (*Range, error) {
 		}
 	}
 	vr := new(Range)
-	if !isNaturalRange {
-		err := vr.setBound(str)
+	if leftEnd == rightStart {
+		err := vr.setBound(str, lowerBound, upperBound)
 		return vr, err
 	}
 
-	for _, delimiter := range []string{" - ", " – ", "–", " "} {
-		if strings.Contains(str, delimiter) {
-			parts := strings.Split(str, delimiter)
-			if len(parts) == 2 {
-				if strings.HasPrefix(parts[0], ">") {
-					vr.setBound(parts[0])
-				} else {
-					vr.setBound(">=" + parts[0])
-				}
-				if strings.HasPrefix(parts[1], "<") {
-					vr.setBound(parts[1])
-				} else {
-					vr.setBound("<=" + parts[1])
-				}
-				return vr, nil
-			}
-			return nil, ErrTooManyBoundaries
-		}
+	if leftEnd == 0 {
+		leftEnd = len(str)
+	}
+	if err := vr.setBound(str[:leftEnd], true, false); err != nil {
+		return vr, err
+	}
+	if err := vr.setBound(str[rightStart:], false, true); err != nil {
+		return vr, err
 	}
 
-	return nil, nil
+	return vr, nil
 }
 
-func (r *Range) setBound(str string) error {
-	t := strings.TrimLeft(str, "~=v<>^")
-	num, err := NewVersion(t)
+func (r *Range) setBound(str string, isLower, isUpper bool) error {
+	var versionStartIdx int
+	for ; versionStartIdx < len(str); versionStartIdx++ {
+		r := str[versionStartIdx]
+		if '0' <= r && r <= '9' {
+			goto startFound
+		}
+	}
+	return ErrInvalidVersionString
+
+startFound:
+	num, err := NewVersion(str[versionStartIdx:])
 	if err != nil {
 		return err
 	}
 
-	equalOk := strings.Contains(str, "=")
-	if !strings.Contains(str, ">") {
+	prefix := str[:versionStartIdx]
+	equalOk := versionStartIdx == 0 || strings.Contains(prefix, "=")
+	if isUpper {
 		r.equalsUpper = equalOk
 		r.upper = num
 	}
-	if !strings.Contains(str, "<") {
+	if isLower {
 		r.equalsLower = equalOk
 		r.lower = num
 	}

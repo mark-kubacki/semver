@@ -37,12 +37,12 @@ func BenchmarkBlangMake(b *testing.B) {
 	benchBlangV, benchBlangErr = v, e
 }
 
-var benchBlangR, benchBlangRErr = blang.ParseRange(">=1.2.3, <=1.3.0")
+var benchBlangR, benchBlangRErr = blang.ParseRange(">=1.2.3 <=1.3.0")
 
 func BenchmarkBlangParseRange(b *testing.B) {
-	var r, e = blang.ParseRange(">=1.2.3, <=1.3.0")
+	var r, e = blang.ParseRange(">=1.2.3 <=1.3.0")
 	for n := 0; n < b.N; n++ {
-		r, e = blang.ParseRange(">=1.2.3, <=1.3.0")
+		r, e = blang.ParseRange(">=1.2.3 <=1.3.0")
 	}
 	benchBlangR, benchBlangRErr = r, e
 }
