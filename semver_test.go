@@ -16,32 +16,32 @@ func TestNewVersion(t *testing.T) {
 		Convey("1.23.8", func() {
 			refVer, err := NewVersion("1.23.8")
 			So(err, ShouldBeNil)
-			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, common, 0, 0, 0, 0, common, 0, 0, 0, 0})
+			So(refVer.version, ShouldResemble, [...]int32{1, 23, 8, 0, common, 0, 0, 0, 0, common, 0, 0, 0, 0})
 		})
 
 		Convey("1.23.8-alpha", func() {
 			refVer, err := NewVersion("1.23.8-alpha")
 			So(err, ShouldBeNil)
-			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, alpha, 0, 0, 0, 0, common, 0, 0, 0, 0})
+			So(refVer.version, ShouldResemble, [...]int32{1, 23, 8, 0, alpha, 0, 0, 0, 0, common, 0, 0, 0, 0})
 		})
 
 		Convey("1.23.8-p3", func() {
 			refVer, err := NewVersion("1.23.8-p3")
 			So(err, ShouldBeNil)
-			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, patch, 3, 0, 0, 0, common, 0, 0, 0, 0})
+			So(refVer.version, ShouldResemble, [...]int32{1, 23, 8, 0, patch, 3, 0, 0, 0, common, 0, 0, 0, 0})
 		})
 
 		Convey("1.23.8-3", func() {
 			refVer, err := NewVersion("1.23.8-3")
 			So(err, ShouldBeNil)
-			So(refVer.version, ShouldResemble, [...]int{1, 23, 8, 0, common, 3, 0, 0, 0, common, 0, 0, 0, 0})
+			So(refVer.version, ShouldResemble, [...]int32{1, 23, 8, 0, common, 3, 0, 0, 0, common, 0, 0, 0, 0})
 		})
 	})
 }
 
 func TestVersion(t *testing.T) {
 	Convey("Version 1.3.8 should be part of Version…", t, FailureContinues, func() {
-		v := []int{1, 3, 8, 0}
+		v := []int32{1, 3, 8, 0}
 
 		Convey("1.3.8", func() {
 			refVer, err := NewVersion("1.3.8")
@@ -162,8 +162,8 @@ func TestVersion(t *testing.T) {
 				v1, _ := NewVersion("1.0.0-p0")
 				v2, _ := NewVersion("1.0.0-p1")
 
-				So(v1.version, ShouldResemble, [...]int{1, 0, 0, 0, patch, 0, 0, 0, 0, common, 0, 0, 0, 0})
-				So(v2.version, ShouldResemble, [...]int{1, 0, 0, 0, patch, 1, 0, 0, 0, common, 0, 0, 0, 0})
+				So(v1.version, ShouldResemble, [...]int32{1, 0, 0, 0, patch, 0, 0, 0, 0, common, 0, 0, 0, 0})
+				So(v2.version, ShouldResemble, [...]int32{1, 0, 0, 0, patch, 1, 0, 0, 0, common, 0, 0, 0, 0})
 
 				So(v1.Less(v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
@@ -203,10 +203,10 @@ func TestVersion(t *testing.T) {
 		v2, _ := NewVersion("1.0.0_alpha_rc1")
 		v3, _ := NewVersion("1.0.0_beta_pre")
 		v4, _ := NewVersion("1.0.0_beta_p1")
-		So(v1.version, ShouldResemble, [...]int{1, 0, 0, 0, alpha, 0, 0, 0, 0, pre, 0, 0, 0, 0})
-		So(v2.version, ShouldResemble, [...]int{1, 0, 0, 0, alpha, 0, 0, 0, 0, rc, 1, 0, 0, 0})
-		So(v3.version, ShouldResemble, [...]int{1, 0, 0, 0, beta, 0, 0, 0, 0, pre, 0, 0, 0, 0})
-		So(v4.version, ShouldResemble, [...]int{1, 0, 0, 0, beta, 0, 0, 0, 0, patch, 1, 0, 0, 0})
+		So(v1.version, ShouldResemble, [...]int32{1, 0, 0, 0, alpha, 0, 0, 0, 0, pre, 0, 0, 0, 0})
+		So(v2.version, ShouldResemble, [...]int32{1, 0, 0, 0, alpha, 0, 0, 0, 0, rc, 1, 0, 0, 0})
+		So(v3.version, ShouldResemble, [...]int32{1, 0, 0, 0, beta, 0, 0, 0, 0, pre, 0, 0, 0, 0})
+		So(v4.version, ShouldResemble, [...]int32{1, 0, 0, 0, beta, 0, 0, 0, 0, patch, 1, 0, 0, 0})
 
 		So(v1, ShouldNotResemble, v2)
 		So(v2, ShouldNotResemble, v3)

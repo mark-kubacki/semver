@@ -61,8 +61,8 @@ var releaseValue = map[string]int{
 // optionally further divided into 'release' and 'specifier' (1.2-634.0-99.8).
 type Version struct {
 	// 0–3: version, 4: releaseType, 5–8: releaseVer, 9: releaseSpecifier, 10–14: specifier
-	version [14]int
-	build   int
+	version [14]int32
+	build   int32
 }
 
 // NewVersion translates the given string, which must be free of whitespace,
@@ -101,7 +101,7 @@ func (t *Version) Parse(str string) error {
 			if err != nil {
 				return err
 			}
-			t.version[fieldNum] = n
+			t.version[fieldNum] = int32(n)
 
 			idx = toIdx
 			fieldNum++
@@ -126,7 +126,7 @@ func (t *Version) Parse(str string) error {
 			default:
 				return ErrInvalidVersionString
 			}
-			t.version[fieldNum] = typ
+			t.version[fieldNum] = int32(typ)
 
 			idx = toIdx
 			fieldNum++
@@ -150,7 +150,7 @@ func (t *Version) Parse(str string) error {
 			if err != nil {
 				return err
 			}
-			t.build = n
+			t.build = int32(n)
 			return nil
 		default:
 			return ErrInvalidVersionString
@@ -166,7 +166,7 @@ func (t *Version) Parse(str string) error {
 
 // signDelta returns the signum of the difference,
 // which' precision can be limited by 'cuttofIdx'.
-func signDelta(a, b [14]int, cutoffIdx int) int8 {
+func signDelta(a, b [14]int32, cutoffIdx int) int8 {
 	//fmt.Println(a, b)
 	for i := range a {
 		if i >= cutoffIdx {
