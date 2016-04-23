@@ -15,6 +15,8 @@ import (
 var (
 	ErrInvalidVersionString = errors.New("Given string does not resemble a Version")
 	ErrTooMuchColumns       = errors.New("Version consists of too much columns")
+	ErrVersionStringLength  = errors.New("Version is too long")
+	ErrInvalidBuildSuffix   = errors.New("Version has a '+' but no +buildNNN suffix")
 )
 
 // alpha = -4, beta = -3, pre = -2, rc = -1, common = 0, revision = 1, patch = 2
@@ -142,7 +144,7 @@ func (t *Version) Parse(str string) error {
 			}
 		case r == '+':
 			if strlen < idx+7 || str[idx:idx+6] != "+build" {
-				return errors.New("Version has no suffix +build and numbers")
+				return ErrInvalidBuildSuffix
 			}
 			n, err := strconv.Atoi(str[idx+6:])
 			if err != nil {
@@ -155,7 +157,7 @@ func (t *Version) Parse(str string) error {
 		}
 
 		if fieldNum > 14 {
-			return errors.New("Version is too long")
+			return ErrVersionStringLength
 		}
 	}
 

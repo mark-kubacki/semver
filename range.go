@@ -11,8 +11,6 @@ import (
 
 // Errors which can be encountered when parsing into a Range.
 var (
-	ErrInvalidRangeString          = errors.New("Invalid Range string")
-	ErrTooManyBoundaries           = errors.New("Range contains more than two elements")
 	ErrUnsupportedShortcutNotation = errors.New("Unsupported shortcut notation for Range")
 )
 
