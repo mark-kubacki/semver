@@ -14,14 +14,16 @@ A library for parsing and processing of *Versions* and *Ranges* in:
 
 Does not use regular expressions.
 
-```
-BenchmarkHashicorpNewVersion-24           500000              2613 ns/op
-BenchmarkBlangMake-24                    1000000              1167 ns/op
-BenchmarkSemverNewVersion-24             5000000               351 ns/op ←
+```bash
+$ go test -run=XXX -benchmem -bench=.
 
-BenchmarkHashicorpNewConstraint-24        100000             11871 ns/op
-BenchmarkBlangParseRange-24               300000              6074 ns/op
-BenchmarkSemverNewRange-24               1000000              2626 ns/op ←
+BenchmarkHashicorpNewVersion-24          1000000  1504 ns/op   432 B/op   5 allocs/op
+BenchmarkBlangMake-24                    2000000   753 ns/op    96 B/op   3 allocs/op
+BenchmarkSemverNewVersion-24            10000000   160 ns/op    64 B/op   1 allocs/op ←
+
+BenchmarkHashicorpNewConstraint-24        200000  6450 ns/op  1680 B/op  18 allocs/op
+BenchmarkBlangParseRange-24              1000000  1715 ns/op   400 B/op  10 allocs/op
+BenchmarkSemverNewRange-24               3000000   486 ns/op   160 B/op   3 allocs/op ←
 ```
 
 Licensed under a [BSD-style license](LICENSE).
