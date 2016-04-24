@@ -4,14 +4,11 @@
 
 package semver
 
-import (
-	"errors"
-	"strings"
-)
+import "strings"
 
 // Errors which can be encountered when parsing into a Range.
-var (
-	ErrUnsupportedShortcutNotation = errors.New("Unsupported shortcut notation for Range")
+const (
+	errUnsupportedShortcutNotation InvalidStringValue = "Unsupported shortcut notation for Range"
 )
 
 // Range is a subset of the universe of Versions: It can have a lower and upper boundary.
@@ -102,7 +99,7 @@ func (r *Range) setBound(str string, isLower, isUpper bool) error {
 			goto startFound
 		}
 	}
-	return ErrInvalidVersionString
+	return errInvalidVersionString
 
 startFound:
 	num, err := NewVersion(str[versionStartIdx:])
@@ -151,7 +148,7 @@ func newRangeByShortcut(str string) (*Range, error) {
 		r.upper.version[0] = r.lower.version[0]
 		r.upper.version[1] = r.lower.version[1] + 1
 	default:
-		return nil, ErrUnsupportedShortcutNotation
+		return nil, errUnsupportedShortcutNotation
 	}
 
 	return r, nil

@@ -6,17 +6,14 @@
 // parsing of Versions and (Version-)Ranges.
 package semver
 
-import (
-	"errors"
-	"strconv"
-)
+import "strconv"
 
 // Errors that are thrown when translating from a string.
-var (
-	ErrInvalidVersionString = errors.New("Given string does not resemble a Version")
-	ErrTooMuchColumns       = errors.New("Version consists of too much columns")
-	ErrVersionStringLength  = errors.New("Version is too long")
-	ErrInvalidBuildSuffix   = errors.New("Version has a '+' but no +buildNNN suffix")
+const (
+	errInvalidVersionString InvalidStringValue = "Given string does not resemble a Version"
+	errTooMuchColumns       InvalidStringValue = "Version consists of too much columns"
+	errVersionStringLength  InvalidStringValue = "Version is too long"
+	errInvalidBuildSuffix   InvalidStringValue = "Version has a '+' but no +buildNNN suffix"
 )
 
 // alpha = -4, beta = -3, pre = -2, rc = -1, common = 0, revision = 1, patch = 2
@@ -56,6 +53,15 @@ var releaseValue = map[string]int{
 	"p":     patch,
 }
 
+// InvalidStringValue is returned as error when translating a string into type fail.
+type InvalidStringValue string
+
+// Error implements the error interface.
+func (e InvalidStringValue) Error() string { return string(e) }
+
+// IsInvalid satisfies a function IsInvalid().
+func (e InvalidStringValue) IsInvalid() bool { return true }
+
 // Version represents a version:
 // Columns consisting of up to four unsigned integers (1.2.4.99)
 // optionally further divided into 'release' and 'specifier' (1.2-634.0-99.8).
@@ -83,7 +89,7 @@ func (t *Version) Parse(str string) error {
 		switch {
 		case '0' <= r && r <= '9':
 			if column == 4 {
-				return ErrTooMuchColumns
+				return errTooMuchColumns
 			}
 			column++
 			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
@@ -116,7 +122,7 @@ func (t *Version) Parse(str string) error {
 
 			typ, known := releaseValue[str[idx:toIdx]]
 			if !known {
-				return ErrInvalidVersionString
+				return errInvalidVersionString
 			}
 			switch {
 			case fieldNum <= idxReleaseType:
@@ -124,7 +130,7 @@ func (t *Version) Parse(str string) error {
 			case fieldNum <= idxSpecifierType:
 				fieldNum = idxSpecifierType
 			default:
-				return ErrInvalidVersionString
+				return errInvalidVersionString
 			}
 			t.version[fieldNum] = int32(typ)
 
@@ -140,11 +146,11 @@ func (t *Version) Parse(str string) error {
 			case fieldNum <= idxSpecifierType:
 				fieldNum = idxSpecifierType
 			default:
-				return ErrInvalidVersionString
+				return errInvalidVersionString
 			}
 		case r == '+':
 			if strlen < idx+7 || str[idx:idx+6] != "+build" {
-				return ErrInvalidBuildSuffix
+				return errInvalidBuildSuffix
 			}
 			n, err := strconv.Atoi(str[idx+6:])
 			if err != nil {
@@ -153,11 +159,11 @@ func (t *Version) Parse(str string) error {
 			t.build = int32(n)
 			return nil
 		default:
-			return ErrInvalidVersionString
+			return errInvalidVersionString
 		}
 
 		if fieldNum > 14 {
-			return ErrVersionStringLength
+			return errVersionStringLength
 		}
 	}
 
