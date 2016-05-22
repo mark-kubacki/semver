@@ -73,8 +73,8 @@ type Version struct {
 
 // NewVersion translates the given string, which must be free of whitespace,
 // into a single Version.
-func NewVersion(str string) (*Version, error) {
-	ver := &Version{}
+func NewVersion(str string) (Version, error) {
+	ver := Version{}
 	err := ver.Parse(str)
 	return ver, err
 }

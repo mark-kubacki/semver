@@ -12,38 +12,38 @@ import (
 )
 
 func hasLowerBound(aRange interface{}, aVersion ...interface{}) string {
-	a := aRange.(*Range)
-	if s := ShouldResemble(a.lower, aVersion[0]); s != "" {
+	a := aRange.(Range)
+	if s := ShouldResemble(*a.lower, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeTrue(a.equalsLower)
 }
 
 func isLeftClosedBy(aRange interface{}, aVersion ...interface{}) string {
-	a := aRange.(*Range)
-	if s := ShouldResemble(a.lower, aVersion[0]); s != "" {
+	a := aRange.(Range)
+	if s := ShouldResemble(*a.lower, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeFalse(a.equalsLower)
 }
 
 func hasUpperBound(aRange interface{}, aVersion ...interface{}) string {
-	a := aRange.(*Range)
-	if s := ShouldResemble(a.upper, aVersion[0]); s != "" {
+	a := aRange.(Range)
+	if s := ShouldResemble(*a.upper, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeTrue(a.equalsUpper)
 }
 
 func isRightClosedBy(aRange interface{}, aVersion ...interface{}) string {
-	a := aRange.(*Range)
-	if s := ShouldResemble(a.upper, aVersion[0]); s != "" {
+	a := aRange.(Range)
+	if s := ShouldResemble(*a.upper, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeFalse(a.equalsUpper)
 }
 
-func testIfResembles(actual, expected *Range) {
+func testIfResembles(actual, expected Range) {
 	So(actual.lower, ShouldResemble, expected.lower)
 	So(actual.equalsLower, ShouldEqual, expected.equalsLower)
 	So(actual.upper, ShouldResemble, expected.upper)
@@ -51,14 +51,14 @@ func testIfResembles(actual, expected *Range) {
 }
 
 func shouldContain(aRange interface{}, aVersion ...interface{}) string {
-	a := aRange.(*Range)
+	a := aRange.(Range)
 	for _, version := range aVersion {
 		v := version.(string)
 		ver, err := NewVersion(v)
 		if err != nil {
 			return err.Error()
 		}
-		if s := ShouldBeTrue(a.Contains(ver)); s != "" {
+		if s := ShouldBeTrue(a.Contains(&ver)); s != "" {
 			return v + " is not in Range"
 		}
 	}
@@ -66,14 +66,14 @@ func shouldContain(aRange interface{}, aVersion ...interface{}) string {
 }
 
 func shouldNotContain(aRange interface{}, aVersion ...interface{}) string {
-	a := aRange.(*Range)
+	a := aRange.(Range)
 	for _, version := range aVersion {
 		v := version.(string)
 		ver, err := NewVersion(v)
 		if err != nil {
 			return err.Error()
 		}
-		if s := ShouldBeFalse(a.Contains(ver)); s != "" {
+		if s := ShouldBeFalse(a.Contains(&ver)); s != "" {
 			return v + " is in Range"
 		}
 	}
@@ -91,7 +91,7 @@ func TestRangeConstruction(t *testing.T) {
 			if err != nil {
 				return
 			}
-			So(verRange.lower, ShouldResemble, ver)
+			So(*verRange.lower, ShouldResemble, ver)
 		})
 	})
 
@@ -297,7 +297,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Notations for 'any'", t, func() {
-		refRange := new(Range)
+		refRange := Range{}
 
 		Convey("'x'", func() {
 			r1, err := NewRange("x")
@@ -609,8 +609,8 @@ func TestSatisfies(t *testing.T) {
 	Convey("Test the examples found in README file.", t, func() {
 		v, _ := NewVersion("1.2.3-beta")
 		r, _ := NewRange("~1.2")
-		So(r.Contains(v), ShouldBeTrue)
-		So(r.IsSatisfiedBy(v), ShouldBeFalse)
+		So(r.Contains(&v), ShouldBeTrue)
+		So(r.IsSatisfiedBy(&v), ShouldBeFalse)
 	})
 }
 
@@ -622,10 +622,10 @@ func Example_range() {
 		upper, _  = NewVersion("2.0")
 	)
 
-	fmt.Println(Compare(*r.GetLowerBoundary(), *beyond))
-	fmt.Println(Compare(*r.GetLowerBoundary(), *lower))
-	fmt.Println(Compare(*r.GetLowerBoundary(), *upper))
-	fmt.Println(Compare(*r.GetUpperBoundary(), *upper))
+	fmt.Println(Compare(*r.GetLowerBoundary(), beyond))
+	fmt.Println(Compare(*r.GetLowerBoundary(), lower))
+	fmt.Println(Compare(*r.GetLowerBoundary(), upper))
+	fmt.Println(Compare(*r.GetUpperBoundary(), upper))
 	// Output:
 	// 1
 	// 0
@@ -636,11 +636,11 @@ func Example_range() {
 func Example_full() {
 	v1, _ := NewVersion("1.2.3-beta")
 	v2, _ := NewVersion("2.0.0-alpha20140805.456-rc3+build1800")
-	fmt.Println(v1.Less(v2))
+	fmt.Println(v1.Less(&v2))
 
 	r1, _ := NewRange("~1.2")
-	fmt.Println(r1.Contains(v1))
-	fmt.Println(r1.IsSatisfiedBy(v1)) // rejects pre-releases: alphas, betas…
+	fmt.Println(r1.Contains(&v1))
+	fmt.Println(r1.IsSatisfiedBy(&v1)) // rejects pre-releases: alphas, betas…
 
 	// Output:
 	// true

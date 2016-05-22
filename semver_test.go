@@ -107,52 +107,52 @@ func TestVersion(t *testing.T) {
 			Convey("1.0.0 < 2.0.0", func() {
 				v1, _ := NewVersion("1.0.0")
 				v2, _ := NewVersion("2.0.0")
-				So(v1.Less(v2), ShouldBeTrue)
-				So(v2.Less(v1), ShouldBeFalse)
+				So(v1.Less(&v2), ShouldBeTrue)
+				So(v2.Less(&v1), ShouldBeFalse)
 				So(v1, ShouldNotResemble, v2)
 			})
 
 			Convey("2.2.1 < 2.4.0-beta", func() {
 				v1, _ := NewVersion("2.2.1")
 				v2, _ := NewVersion("2.4.0-beta")
-				So(v1.Less(v2), ShouldBeTrue)
-				So(v2.Less(v1), ShouldBeFalse)
+				So(v1.Less(&v2), ShouldBeTrue)
+				So(v2.Less(&v1), ShouldBeFalse)
 				So(v1, ShouldNotResemble, v2)
 			})
 
 			Convey("1.0.0 < 1.0.0-p", func() {
 				v1, _ := NewVersion("1.0.0")
 				v2, _ := NewVersion("1.0.0-p")
-				So(v1.Less(v2), ShouldBeTrue)
-				So(v2.Less(v1), ShouldBeFalse)
+				So(v1.Less(&v2), ShouldBeTrue)
+				So(v2.Less(&v1), ShouldBeFalse)
 				So(v1, ShouldNotResemble, v2)
 			})
 
 			Convey("1.0.0-rc < 1.0.0", func() {
 				v1, _ := NewVersion("1.0.0-rc")
 				v2, _ := NewVersion("1.0.0")
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 
 			Convey("1.0.0-pre < 1.0.0-rc", func() {
 				v1, _ := NewVersion("1.0.0-pre")
 				v2, _ := NewVersion("1.0.0-rc")
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 
 			Convey("1.0.0-beta < 1.0.0-pre", func() {
 				v1, _ := NewVersion("1.0.0-beta")
 				v2, _ := NewVersion("1.0.0-pre")
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 
 			Convey("1.0.0-alpha < 1.0.0-beta", func() {
 				v1, _ := NewVersion("1.0.0-alpha")
 				v2, _ := NewVersion("1.0.0-beta")
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 		})
@@ -165,7 +165,7 @@ func TestVersion(t *testing.T) {
 				So(v1.version, ShouldResemble, [...]int32{1, 0, 0, 0, patch, 0, 0, 0, 0, common, 0, 0, 0, 0})
 				So(v2.version, ShouldResemble, [...]int32{1, 0, 0, 0, patch, 1, 0, 0, 0, common, 0, 0, 0, 0})
 
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 		})
@@ -174,7 +174,7 @@ func TestVersion(t *testing.T) {
 			Convey("1.0.0-rc4-alpha1 < 1.0.0-rc4", func() {
 				v1, _ := NewVersion("1.0.0-rc4-alpha1")
 				v2, _ := NewVersion("1.0.0-rc4")
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 		})
@@ -183,7 +183,7 @@ func TestVersion(t *testing.T) {
 			Convey("1.0.0+build1 < 1.0.0+build2", func() {
 				v1, _ := NewVersion("1.0.0+build1")
 				v2, _ := NewVersion("1.0.0+build2")
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 				So(v1, ShouldNotResemble, v2)
 			})
 
@@ -191,7 +191,7 @@ func TestVersion(t *testing.T) {
 				v1, _ := NewVersion("1.0.0_pre20140722+build14")
 				v2, _ := NewVersion("1.0.0_pre20140722+build15")
 				So(v1, ShouldNotResemble, v2)
-				So(v1.Less(v2), ShouldBeTrue)
+				So(v1.Less(&v2), ShouldBeTrue)
 			})
 		})
 
@@ -211,9 +211,9 @@ func TestVersion(t *testing.T) {
 		So(v1, ShouldNotResemble, v2)
 		So(v2, ShouldNotResemble, v3)
 		So(v3, ShouldNotResemble, v4)
-		So(v1.Less(v2), ShouldBeTrue)
-		So(v2.Less(v3), ShouldBeTrue)
-		So(v3.Less(v4), ShouldBeTrue)
+		So(v1.Less(&v2), ShouldBeTrue)
+		So(v2.Less(&v3), ShouldBeTrue)
+		So(v3.Less(&v4), ShouldBeTrue)
 	})
 
 	Convey("Reject too long Versions.", t, func() {
@@ -242,17 +242,17 @@ func TestVersionOrder(t *testing.T) {
 
 		Convey("reasonably less than Version 1.2.3", func() {
 			v2, _ := NewVersion("1.2.3")
-			So(v1.limitedLess(v2), ShouldBeTrue)
+			So(v1.limitedLess(&v2), ShouldBeTrue)
 		})
 
 		Convey("reasonably less than Version 1.2.3-alpha4.0.0.1", func() {
 			v2, _ := NewVersion("1.2.3-alpha4.0.0.1")
-			So(v1.limitedLess(v2), ShouldBeTrue)
+			So(v1.limitedLess(&v2), ShouldBeTrue)
 		})
 
 		Convey("not reasonably less than 1.2.3-alpha4-p5", func() {
 			v2, _ := NewVersion("1.2.3-alpha4-p5")
-			So(v1.limitedLess(v2), ShouldBeFalse)
+			So(v1.limitedLess(&v2), ShouldBeFalse)
 		})
 	})
 
@@ -264,7 +264,7 @@ func ExampleLimitedEqual_first() {
 		rc, _  = NewVersion("1.0.0-rc")
 	)
 
-	fmt.Println(pre.LimitedEqual(rc))
+	fmt.Println(pre.LimitedEqual(&rc))
 	// Output: false
 }
 
@@ -274,7 +274,7 @@ func ExampleLimitedEqual_second() {
 		b, _ = NewVersion("1.0.0-beta-pre5")
 	)
 
-	fmt.Println(a.LimitedEqual(b))
+	fmt.Println(a.LimitedEqual(&b))
 	// Output: true
 }
 
@@ -284,8 +284,8 @@ func ExampleLimitedEqual_third() {
 		patched, _ = NewVersion("1.0.0-p1")
 	)
 
-	fmt.Println(patched.LimitedEqual(regular))
-	fmt.Println(regular.LimitedEqual(patched))
+	fmt.Println(patched.LimitedEqual(&regular))
+	fmt.Println(regular.LimitedEqual(&patched))
 
 	// Output:
 	// false

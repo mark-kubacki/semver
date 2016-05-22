@@ -21,10 +21,10 @@ type Range struct {
 }
 
 // NewRange translates a string into a Range.
-func NewRange(str string) (*Range, error) {
+func NewRange(str string) (Range, error) {
 	if str == "*" || str == "x" || str == "" {
 		// an empty Range contains everything
-		return new(Range), nil
+		return Range{}, nil
 	}
 	isNaturalRange := true
 	if strings.HasSuffix(str, ".x") || strings.HasSuffix(str, ".*") {
@@ -72,7 +72,7 @@ func NewRange(str string) (*Range, error) {
 			return newRangeByShortcut("^" + str)
 		}
 	}
-	vr := new(Range)
+	vr := Range{}
 	if leftEnd == rightStart {
 		err := vr.setBound(str, lowerBound, upperBound)
 		return vr, err
@@ -111,11 +111,11 @@ startFound:
 	equalOk := versionStartIdx == 0 || strings.Contains(prefix, "=")
 	if isUpper {
 		r.equalsUpper = equalOk
-		r.upper = num
+		r.upper = &num
 	}
 	if isLower {
 		r.equalsLower = equalOk
-		r.lower = num
+		r.lower = &num
 	}
 
 	return nil
@@ -123,20 +123,17 @@ startFound:
 
 // newRangeByShortcut covers the special case of Ranges whose boundaries
 // are declared using prefixes.
-func newRangeByShortcut(str string) (*Range, error) {
+func newRangeByShortcut(str string) (Range, error) {
 	t := strings.TrimLeft(str, "~^")
 	num, err := NewVersion(t)
 	if err != nil {
-		return nil, err
+		return Range{}, err
 	}
 	if strings.HasPrefix(t, "0.0.") {
 		return NewRange(t)
 	}
 
-	r := new(Range)
-	r.lower = num
-	r.equalsLower = true
-	r.upper = new(Version)
+	r := Range{lower: &num, equalsLower: true, upper: new(Version)}
 
 	switch {
 	case strings.HasPrefix(t, "0."):
@@ -148,7 +145,7 @@ func newRangeByShortcut(str string) (*Range, error) {
 		r.upper.version[0] = r.lower.version[0]
 		r.upper.version[1] = r.lower.version[1] + 1
 	default:
-		return nil, errUnsupportedShortcutNotation
+		return r, errUnsupportedShortcutNotation
 	}
 
 	return r, nil
@@ -240,5 +237,5 @@ func Satisfies(aVersion, aRange string) (bool, error) {
 		return false, err
 	}
 
-	return r.IsSatisfiedBy(v), nil
+	return r.IsSatisfiedBy(&v), nil
 }

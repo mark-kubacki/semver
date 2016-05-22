@@ -19,11 +19,11 @@ $ go test -run=XXX -benchmem -bench=.
 
 BenchmarkHashicorpNewVersion-24          1000000  1504 ns/op   432 B/op   5 allocs/op
 BenchmarkBlangMake-24                    2000000   753 ns/op    96 B/op   3 allocs/op
-BenchmarkSemverNewVersion-24            10000000   160 ns/op    64 B/op   1 allocs/op ←
+BenchmarkSemverNewVersion-24            20000000   108 ns/op     0 B/op   0 allocs/op ←
 
 BenchmarkHashicorpNewConstraint-24        200000  6450 ns/op  1680 B/op  18 allocs/op
 BenchmarkBlangParseRange-24              1000000  1715 ns/op   400 B/op  10 allocs/op
-BenchmarkSemverNewRange-24               3000000   486 ns/op   160 B/op   3 allocs/op ←
+BenchmarkSemverNewRange-24               3000000   439 ns/op   128 B/op   2 allocs/op ←
 ```
 
 Licensed under a [BSD-style license](LICENSE).
