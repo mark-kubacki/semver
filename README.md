@@ -2,6 +2,7 @@ Semantic Versioning for Golang
 ==============================
 
 [![Build Status](https://drone.io/github.com/wmark/semver/status.png)](https://drone.io/github.com/wmark/semver/latest)
+[![Codebeat Badge](https://codebeat.co/badges/f4952f49-2c84-423e-af7b-817616e5f48e)](https://codebeat.co/projects/github-com-wmark-semver)
 [![Coverage Status](https://coveralls.io/repos/wmark/semver/badge.png?branch=master)](https://coveralls.io/r/wmark/semver?branch=master)
 [![GoDoc](https://godoc.org/github.com/wmark/semver?status.png)](https://godoc.org/github.com/wmark/semver)
 
