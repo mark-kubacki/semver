@@ -237,3 +237,21 @@ func (t *Version) IsAPreRelease() bool {
 func (t *Version) sharesPrefixWith(o *Version) bool {
 	return signDelta(t.version, o.version, idxReleaseType) == 0
 }
+
+// Major returns the major of a version. For instance, for the version "1.2.3",
+// it would return 1.
+func (t *Version) Major() int32 {
+	return t.version[0]
+}
+
+// Minor returns the minor of a version. For instance, for the version "1.2.3",
+// it would return 2.
+func (t *Version) Minor() int32 {
+	return t.version[1]
+}
+
+// Patch returns the patch of a version. For instance, for the version "1.2.3",
+// it would return 3.
+func (t *Version) Patch() int32 {
+	return t.version[2]
+}

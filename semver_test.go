@@ -258,6 +258,24 @@ func TestVersionOrder(t *testing.T) {
 
 }
 
+func TestVersionAccessors(t *testing.T) {
+	Convey("For version 1.2.3 we should have", t, func() {
+		v, _ := NewVersion("1.2.3")
+
+		Convey("major equals 1", func() {
+			So(v.Major(), ShouldEqual, 1)
+		})
+
+		Convey("minor equals 2", func() {
+			So(v.Minor(), ShouldEqual, 2)
+		})
+
+		Convey("patch equals 3", func() {
+			So(v.Patch(), ShouldEqual, 3)
+		})
+	})
+}
+
 func ExampleLimitedEqual_first() {
 	var (
 		pre, _ = NewVersion("1.0.0-pre")
