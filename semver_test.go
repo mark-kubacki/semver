@@ -235,6 +235,164 @@ func TestVersion(t *testing.T) {
 	})
 }
 
+func TestNextVersions(t *testing.T) {
+	toStr := func(list []*Version) []string {
+		ss := make([]string, len(list))
+		for i := range list {
+			ss[i] = list[i].String()
+		}
+		return ss
+	}
+
+	Convey("NextVersions works with…", t, func() {
+
+		ver := "1.0.0"
+		Convey(ver, func() {
+			ver, err := NewVersion(ver)
+			So(err, ShouldBeNil)
+
+			Convey("Without pre-releases", func() {
+				next := toStr(ver.NextVersions(0, false))
+				So(next, ShouldResemble, []string{
+					"1.0.0-r.1",
+					"1.0.0-p.1",
+					"1.0.1",
+					"1.1.0",
+					"2.0.0",
+				})
+			})
+
+			Convey("With some pre-releases", func() {
+				next := toStr(ver.NextVersions(-2, false))
+				So(next, ShouldResemble, []string{
+					"1.0.0-r.1",
+					"1.0.0-p.1",
+					"1.0.1",
+					"1.1.0-pre",
+					"1.1.0-rc",
+					"1.1.0",
+					"2.0.0-pre",
+					"2.0.0-rc",
+					"2.0.0",
+				})
+			})
+
+			Convey("With some pre-releases and numbers", func() {
+				next := toStr(ver.NextVersions(-2, true))
+				So(next, ShouldResemble, []string{
+					"1.0.0-r.1",
+					"1.0.0-p.1",
+					"1.0.1",
+					"1.1.0-pre.1",
+					"1.1.0-rc.1",
+					"1.1.0",
+					"2.0.0-pre.1",
+					"2.0.0-rc.1",
+					"2.0.0",
+				})
+			})
+
+			Convey("With all pre-releases", func() {
+				next := toStr(ver.NextVersions(-4, false))
+				So(next, ShouldResemble, []string{
+					"1.0.0-r.1",
+					"1.0.0-p.1",
+					"1.0.1",
+					"1.1.0-alpha",
+					"1.1.0-beta",
+					"1.1.0-pre",
+					"1.1.0-rc",
+					"1.1.0",
+					"2.0.0-alpha",
+					"2.0.0-beta",
+					"2.0.0-pre",
+					"2.0.0-rc",
+					"2.0.0",
+				})
+			})
+		})
+
+		ver = "1.2.3"
+		Convey(ver, func() {
+			ver, err := NewVersion(ver)
+			So(err, ShouldBeNil)
+
+			Convey("Without pre-releases", func() {
+				next := toStr(ver.NextVersions(0, false))
+				So(next, ShouldResemble, []string{
+					"1.2.3-r.1",
+					"1.2.3-p.1",
+					"1.2.4",
+					"1.3.0",
+					"2.0.0",
+				})
+			})
+
+			Convey("With some pre-releases", func() {
+				next := toStr(ver.NextVersions(-2, false))
+				So(next, ShouldResemble, []string{
+					"1.2.3-r.1",
+					"1.2.3-p.1",
+					"1.2.4",
+					"1.3.0-pre",
+					"1.3.0-rc",
+					"1.3.0",
+					"2.0.0-pre",
+					"2.0.0-rc",
+					"2.0.0",
+				})
+			})
+
+			Convey("With all pre-releases", func() {
+				next := toStr(ver.NextVersions(-4, false))
+				So(next, ShouldResemble, []string{
+					"1.2.3-r.1",
+					"1.2.3-p.1",
+					"1.2.4",
+					"1.3.0-alpha",
+					"1.3.0-beta",
+					"1.3.0-pre",
+					"1.3.0-rc",
+					"1.3.0",
+					"2.0.0-alpha",
+					"2.0.0-beta",
+					"2.0.0-pre",
+					"2.0.0-rc",
+					"2.0.0",
+				})
+			})
+		})
+
+		ver = "1.2.0-beta2"
+		Convey(ver, func() {
+			ver, err := NewVersion(ver)
+			So(err, ShouldBeNil)
+
+			Convey("With all pre-releases and numbers", func() {
+				next := toStr(ver.NextVersions(-4, true))
+				So(next, ShouldResemble, []string{
+					"1.2.0-beta.3",
+					"1.2.0-pre.1",
+					"1.2.0-rc.1",
+					"1.2.0",
+					"1.2.1",
+					"1.3.0-alpha.1",
+					"1.3.0-beta.1",
+					"1.3.0-pre.1",
+					"1.3.0-rc.1",
+					"1.3.0",
+					"2.0.0-alpha.1",
+					"2.0.0-beta.1",
+					"2.0.0-pre.1",
+					"2.0.0-rc.1",
+					"2.0.0",
+				})
+			})
+		})
+
+	})
+}
+
 func TestVersionOrder(t *testing.T) {
 
 	Convey("Version 1.2.3-alpha4 should be…", t, func() {
