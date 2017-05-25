@@ -1,3 +1,5 @@
+// +build 3rdparty
+
 package semver
 
 import (

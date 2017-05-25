@@ -1,0 +1,41 @@
+variables:
+  BUILD_SOURCE: "github.com/wmark/semver"
+
+cache:
+  key: "go/$CI_BUILD_REF_NAME"
+  paths:
+  - _vendor-cache/
+
+.go_depends_template: &get_dependencies
+  before_script:
+  - mkdir -p _vendor-cache /var/go/ours
+  - ln -s "$(pwd -P)/_vendor-cache" /var/go/theirs
+  - export GOPATH=/var/go/theirs:/var/go/ours
+
+  - export GODIR=/var/go/ours/src/$BUILD_SOURCE
+  - mkdir -p "$(dirname "$GODIR")"
+  - ln -sfv "$(pwd -P)" "$GODIR"
+
+  - cd "$GODIR"
+  - go get -d -t ./...
+#  - mv /var/go/theirs/src/{blitznote.com,plugin.hosting} /var/go/ours/src/ 2>/dev/null || true
+
+vet:
+  stage: test
+  <<: *get_dependencies
+  script:
+  - diff <(echo -n) <(gofmt -s -d $(find . -type f -name '*.go' -not -path "./_*"))
+  - go vet ./...
+
+lint:
+  stage: test
+  <<: *get_dependencies
+  script:
+  - ineffassign .
+  - golint ./...
+
+unittests:
+  stage: test
+  <<: *get_dependencies
+  script:
+  - go test -v ./...
