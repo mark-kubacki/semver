@@ -446,7 +446,7 @@ func TestVersionAccessors(t *testing.T) {
 	})
 }
 
-func ExampleLimitedEqual_first() {
+func ExampleVersion_LimitedEqual_first() {
 	var (
 		pre, _ = NewVersion("1.0.0-pre")
 		rc, _  = NewVersion("1.0.0-rc")
@@ -456,7 +456,7 @@ func ExampleLimitedEqual_first() {
 	// Output: false
 }
 
-func ExampleLimitedEqual_second() {
+func ExampleVersion_LimitedEqual_second() {
 	var (
 		a, _ = NewVersion("1.0.0-beta-pre3")
 		b, _ = NewVersion("1.0.0-beta-pre5")
@@ -466,7 +466,7 @@ func ExampleLimitedEqual_second() {
 	// Output: true
 }
 
-func ExampleLimitedEqual_third() {
+func ExampleVersion_LimitedEqual_third() {
 	var (
 		regular, _ = NewVersion("1.0.0")
 		patched, _ = NewVersion("1.0.0-p1")
