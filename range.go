@@ -14,9 +14,11 @@ const (
 // Range is a subset of the universe of Versions: It can have a lower and upper boundary.
 // For example, "1.2–2.0" is such a Range, with two boundaries.
 type Range struct {
-	lower       *Version
+	lower       Version
+	hasLower    bool
 	equalsLower bool
-	upper       *Version
+	upper       Version
+	hasUpper    bool
 	equalsUpper bool
 }
 
@@ -111,11 +113,13 @@ startFound:
 	equalOk := versionStartIdx == 0 || strings.Contains(prefix, "=")
 	if isUpper {
 		r.equalsUpper = equalOk
-		r.upper = &num
+		r.upper = num
+		r.hasUpper = true
 	}
 	if isLower {
 		r.equalsLower = equalOk
-		r.lower = &num
+		r.lower = num
+		r.hasLower = true
 	}
 
 	return nil
@@ -133,7 +137,7 @@ func newRangeByShortcut(str string) (Range, error) {
 		return NewRange(t)
 	}
 
-	r := Range{lower: &num, equalsLower: true, upper: new(Version)}
+	r := Range{lower: num, hasLower: true, equalsLower: true, upper: Version{}}
 
 	switch {
 	case strings.HasPrefix(t, "0."):
@@ -153,12 +157,18 @@ func newRangeByShortcut(str string) (Range, error) {
 
 // GetLowerBoundary translates a boundary into a Version.
 func (r *Range) GetLowerBoundary() *Version {
-	return r.lower
+	if !r.hasLower {
+		return nil
+	}
+	return &r.lower
 }
 
 // GetUpperBoundary translates a boundary into a Version.
 func (r *Range) GetUpperBoundary() *Version {
-	return r.upper
+	if !r.hasUpper {
+		return nil
+	}
+	return &r.upper
 }
 
 // Contains returns true if a Version is inside this Range.
@@ -184,10 +194,10 @@ func (r *Range) IsSatisfiedBy(v *Version) bool {
 		return false
 	}
 	if v.IsAPreRelease() {
-		if r.lower != nil && r.lower.IsAPreRelease() && r.lower.sharesPrefixWith(v) {
+		if r.hasLower && r.lower.IsAPreRelease() && r.lower.sharesPrefixWith(v) {
 			return true
 		}
-		if r.upper != nil && r.upper.IsAPreRelease() && r.upper.sharesPrefixWith(v) {
+		if r.hasUpper && r.upper.IsAPreRelease() && r.upper.sharesPrefixWith(v) {
 			return true
 		}
 		return false
@@ -196,7 +206,7 @@ func (r *Range) IsSatisfiedBy(v *Version) bool {
 }
 
 func (r *Range) satisfiesLowerBound(v *Version) bool {
-	if r.lower == nil {
+	if !r.hasLower {
 		return true
 	}
 
@@ -209,7 +219,7 @@ func (r *Range) satisfiesLowerBound(v *Version) bool {
 }
 
 func (r *Range) satisfiesUpperBound(v *Version) bool {
-	if r.upper == nil {
+	if !r.hasUpper {
 		return true
 	}
 
@@ -222,7 +232,7 @@ func (r *Range) satisfiesUpperBound(v *Version) bool {
 		equal = r.upper.sharesPrefixWith(v)
 	}
 
-	return v.limitedLess(r.upper) && !equal
+	return v.limitedLess(&r.upper) && !equal
 }
 
 // Satisfies is a convenience function for former NodeJS developers

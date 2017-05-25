@@ -24,7 +24,7 @@ BenchmarkSemverNewVersion-24            20000000   108 ns/op     0 B/op   0 allo
 
 BenchmarkHashicorpNewConstraint-24        200000  6450 ns/op  1680 B/op  18 allocs/op
 BenchmarkBlangParseRange-24              1000000  1715 ns/op   400 B/op  10 allocs/op
-BenchmarkSemverNewRange-24               3000000   439 ns/op   128 B/op   2 allocs/op ←
+BenchmarkSemverNewRange-24               5000000   310 ns/op     0 B/op   0 allocs/op ←
 ```
 
 Licensed under a [BSD-style license](LICENSE).

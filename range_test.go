@@ -13,7 +13,7 @@ import (
 
 func hasLowerBound(aRange interface{}, aVersion ...interface{}) string {
 	a := aRange.(Range)
-	if s := ShouldResemble(*a.lower, aVersion[0]); s != "" {
+	if s := ShouldResemble(a.lower, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeTrue(a.equalsLower)
@@ -21,7 +21,7 @@ func hasLowerBound(aRange interface{}, aVersion ...interface{}) string {
 
 func isLeftClosedBy(aRange interface{}, aVersion ...interface{}) string {
 	a := aRange.(Range)
-	if s := ShouldResemble(*a.lower, aVersion[0]); s != "" {
+	if s := ShouldResemble(a.lower, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeFalse(a.equalsLower)
@@ -29,7 +29,7 @@ func isLeftClosedBy(aRange interface{}, aVersion ...interface{}) string {
 
 func hasUpperBound(aRange interface{}, aVersion ...interface{}) string {
 	a := aRange.(Range)
-	if s := ShouldResemble(*a.upper, aVersion[0]); s != "" {
+	if s := ShouldResemble(a.upper, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeTrue(a.equalsUpper)
@@ -37,7 +37,7 @@ func hasUpperBound(aRange interface{}, aVersion ...interface{}) string {
 
 func isRightClosedBy(aRange interface{}, aVersion ...interface{}) string {
 	a := aRange.(Range)
-	if s := ShouldResemble(*a.upper, aVersion[0]); s != "" {
+	if s := ShouldResemble(a.upper, aVersion[0]); s != "" {
 		return s
 	}
 	return ShouldBeFalse(a.equalsUpper)
@@ -91,7 +91,7 @@ func TestRangeConstruction(t *testing.T) {
 			if err != nil {
 				return
 			}
-			So(*verRange.lower, ShouldResemble, ver)
+			So(verRange.lower, ShouldResemble, ver)
 		})
 	})
 
