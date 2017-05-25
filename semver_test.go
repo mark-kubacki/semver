@@ -239,7 +239,7 @@ func TestNextVersions(t *testing.T) {
 	toStr := func(list []*Version) []string {
 		ss := make([]string, len(list))
 		for i := range list {
-			ss[i] = list[i].String()
+			ss[i] = fmt.Sprintf("%v", list[i])
 		}
 		return ss
 	}
