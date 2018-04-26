@@ -88,6 +88,10 @@ func (t *Version) Parse(str string) error {
 	var idx, toIdx, fieldNum, column int
 	var strlen = len(str)
 
+	if strlen > 1 && str[idx] == 'v' {
+		idx++
+	}
+
 	for idx < strlen {
 		r := str[idx]
 		switch {
