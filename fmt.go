@@ -5,20 +5,113 @@
 package semver
 
 import (
-	"fmt"
+	"strconv"
 )
 
-// String returns the string representation of t.
-func (t *Version) String() string {
-	s := fmt.Sprintf("%d.%d.%d", t.version[0], t.version[1], t.version[2])
-	if t.version[idxReleaseType] != common {
-		s += fmt.Sprintf("-%s", releaseDesc[int(t.version[idxReleaseType])])
-		if t.version[idxRelease] > 0 {
-			s += fmt.Sprintf(".%d", t.version[idxRelease])
+func numDecimalPlaces(n int32) int {
+	var i int
+	for i = 1; n > 9; i++ {
+		n = n / 10
+	}
+	return i
+}
+
+// Serialize builds a minimal human-readable representation of this Version,
+// and returns it as slice.
+// Set |minPlaces| to how many columns the prefix must contain.
+func (t *Version) serialize(minPlaces int) []byte {
+	var idx, bytesNeeded int
+
+	// Determine how much target space is needed (i.e. the string length).
+	for idx = 0; idx <= len(t.version); idx += 5 {
+		switch {
+		case t.version[idx+3] != 0 || minPlaces >= 4:
+			bytesNeeded += 1 + numDecimalPlaces(t.version[idx+3])
+			fallthrough
+		case t.version[idx+2] != 0 || minPlaces >= 3:
+			bytesNeeded += 1 + numDecimalPlaces(t.version[idx+2])
+			fallthrough
+		case t.version[idx+1] != 0 || minPlaces >= 2:
+			bytesNeeded += 1 + numDecimalPlaces(t.version[idx+1])
+			fallthrough
+		default:
+			bytesNeeded += numDecimalPlaces(t.version[idx])
+		}
+		if t.version[idx+4] != 0 {
+			bytesNeeded += 1 + len(releaseDesc[int(t.version[idx+4])])
+		}
+
+		remainderEmpty := true
+		for j := idx + 5; j < len(t.version); j++ {
+			if t.version[j] != 0 {
+				remainderEmpty = false
+				break
+			}
+		}
+		if remainderEmpty {
+			break
 		}
 	}
 	if t.build != 0 {
-		s += fmt.Sprintf("+build%d", t.build)
+		bytesNeeded += len("+build") + numDecimalPlaces(t.build)
 	}
-	return s
+
+	// Build the string representation
+	target := make([]byte, 0, bytesNeeded)
+	for idx = 0; idx < len(t.version); idx += 5 {
+		switch {
+		case t.version[idx+3] != 0 || minPlaces >= 4:
+			target = strconv.AppendUint(target, uint64(t.version[idx]), 10)
+			target = append(target, '.')
+			target = strconv.AppendUint(target, uint64(t.version[idx+1]), 10)
+			target = append(target, '.')
+			target = strconv.AppendUint(target, uint64(t.version[idx+2]), 10)
+			target = append(target, '.')
+			target = strconv.AppendUint(target, uint64(t.version[idx+3]), 10)
+		case t.version[idx+2] != 0 || minPlaces >= 3:
+			target = strconv.AppendUint(target, uint64(t.version[idx]), 10)
+			target = append(target, '.')
+			target = strconv.AppendUint(target, uint64(t.version[idx+1]), 10)
+			target = append(target, '.')
+			target = strconv.AppendUint(target, uint64(t.version[idx+2]), 10)
+		case t.version[idx+1] != 0 || minPlaces >= 2:
+			target = strconv.AppendUint(target, uint64(t.version[idx]), 10)
+			target = append(target, '.')
+			target = strconv.AppendUint(target, uint64(t.version[idx+1]), 10)
+		default:
+			target = strconv.AppendUint(target, uint64(t.version[idx]), 10)
+		}
+		if t.version[idx+4] != 0 {
+			target = append(target, '-')
+			target = append(target, []byte(releaseDesc[int(t.version[idx+4])])...)
+		}
+
+		remainderEmpty := true
+		for j := idx + 5; j < len(t.version); j++ {
+			if t.version[j] != 0 {
+				remainderEmpty = false
+				break
+			}
+		}
+		if remainderEmpty {
+			break
+		}
+		minPlaces -= 5
+	}
+	if t.build != 0 {
+		target = append(target, []byte("+build")...)
+		target = strconv.AppendUint(target, uint64(t.build), 10)
+	}
+
+	return target
+}
+
+// Bytes returns a slice with the minimal human-readable representation of this Version.
+func (t *Version) Bytes() []byte {
+	return t.serialize(0)
+}
+
+// String returns the string representation of t.
+func (t *Version) String() string {
+	return string(t.serialize(3))
 }
