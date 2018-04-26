@@ -1,12 +1,11 @@
 variables:
   BUILD_SOURCE: "github.com/wmark/semver"
 
-cache:
-  key: "go/$CI_BUILD_REF_NAME"
-  paths:
-  - _vendor-cache/
+stages:
+- prerequisites
+- test
 
-.go_depends_template: &get_dependencies
+.go_template: &use_dependencies
   before_script:
   - mkdir -p _vendor-cache /var/go/ours
   - ln -s "$(pwd -P)/_vendor-cache" /var/go/theirs
@@ -17,25 +16,40 @@ cache:
   - ln -sfv "$(pwd -P)" "$GODIR"
 
   - cd "$GODIR"
+  cache:
+    key: "$CI_PROJECT_NAME-$CI_BUILD_REF_NAME"
+    policy: pull
+    paths:
+    - _vendor-cache/
+
+# This very first job will download any dependencies.
+get_dependencies:
+  stage: prerequisites
+  <<: *use_dependencies
+  script:
   - go get -d -t ./...
-#  - mv /var/go/theirs/src/{blitznote.com,plugin.hosting} /var/go/ours/src/ 2>/dev/null || true
+  cache:
+    key: "$CI_PROJECT_NAME-$CI_BUILD_REF_NAME"
+    policy: pull-push
+    paths:
+    - _vendor-cache/
 
 vet:
   stage: test
-  <<: *get_dependencies
+  <<: *use_dependencies
   script:
   - diff <(echo -n) <(gofmt -s -d $(find . -type f -name '*.go' -not -path "./_*"))
   - go vet ./...
 
 lint:
   stage: test
-  <<: *get_dependencies
+  <<: *use_dependencies
   script:
   - ineffassign .
   - golint ./...
 
 unittests:
   stage: test
-  <<: *get_dependencies
+  <<: *use_dependencies
   script:
   - go test -v ./...
