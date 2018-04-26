@@ -334,12 +334,12 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 		next = append(next, &ver)
 	}
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < idxReleaseType-1; i++ {
 		// for each version point, iterate the release types within desired bounds
 		for releaseType := int32(minReleaseType); releaseType <= common; releaseType++ {
 			ver := *t
 			ver.version[i]++
-			for j := i + 1; j < 3; j++ {
+			for j := i + 1; j < len(ver.version); j++ {
 				ver.version[j] = 0 // when incrementing, reset next points to 0
 			}
 			if i == 2 && releaseType < common {
