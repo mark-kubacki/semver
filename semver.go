@@ -91,6 +91,8 @@ func (t *Version) Parse(str string) error {
 		idx++
 	}
 
+	t.build = 0
+
 	for idx < strlen {
 		r := str[idx]
 		switch {
@@ -172,6 +174,11 @@ func (t *Version) Parse(str string) error {
 		if fieldNum > 14 {
 			return errVersionStringLength
 		}
+	}
+
+	for fieldNum < len(t.version) {
+		t.version[fieldNum] = 0
+		fieldNum++
 	}
 
 	return nil
