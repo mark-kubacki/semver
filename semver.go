@@ -7,7 +7,6 @@
 package semver
 
 import (
-	"sort"
 	"strconv"
 )
 
@@ -334,7 +333,7 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 		next = append(next, &ver)
 	}
 
-	for i := 0; i < idxReleaseType-1; i++ {
+	for i := idxReleaseType - 2; 0 <= i; i-- {
 		// for each version point, iterate the release types within desired bounds
 		for releaseType := int32(minReleaseType); releaseType <= common; releaseType++ {
 			ver := *t
@@ -356,10 +355,6 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 			next = append(next, &ver)
 		}
 	}
-
-	sort.Slice(next, func(a, b int) bool {
-		return next[a].Less(next[b])
-	})
 
 	return next
 }
