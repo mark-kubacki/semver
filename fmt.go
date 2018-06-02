@@ -19,8 +19,12 @@ func numDecimalPlaces(n int32) int {
 // Serialize builds a minimal human-readable representation of this Version,
 // and returns it as slice.
 // Set |minPlaces| to how many columns the prefix must contain.
-func (t *Version) serialize(minPlaces int) []byte {
+func (t *Version) serialize(minPlaces int, quoted bool) []byte {
 	var idx, bytesNeeded int
+
+	if quoted {
+		bytesNeeded = 2
+	}
 
 	// Determine how much target space is needed (i.e. the string length).
 	for idx = 0; idx <= len(t.version); idx += 5 {
@@ -58,6 +62,11 @@ func (t *Version) serialize(minPlaces int) []byte {
 
 	// Build the string representation
 	target := make([]byte, 0, bytesNeeded)
+
+	if quoted {
+		target = append(target, '"')
+	}
+
 	for idx = 0; idx < len(t.version); idx += 5 {
 		switch {
 		case t.version[idx+3] != 0 || minPlaces >= 4:
@@ -102,16 +111,53 @@ func (t *Version) serialize(minPlaces int) []byte {
 		target = append(target, []byte("+build")...)
 		target = strconv.AppendUint(target, uint64(t.build), 10)
 	}
+	if quoted {
+		target = append(target, '"')
+	}
 
 	return target
 }
 
 // Bytes returns a slice with the minimal human-readable representation of this Version.
 func (t *Version) Bytes() []byte {
-	return t.serialize(0)
+	return t.serialize(0, false)
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (t *Version) MarshalBinary() ([]byte, error) {
+	return t.serialize(0, false), nil
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (t *Version) UnmarshalBinary(b []byte) error {
+	return t.Parse(string(b))
 }
 
 // String returns the string representation of t.
 func (t *Version) String() string {
-	return string(t.serialize(3))
+	return string(t.serialize(3, false))
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (t *Version) MarshalJSON() ([]byte, error) {
+	return t.serialize(0, true), nil
+}
+
+// MarshalText implements the encoding.TestMarshaler interface.
+func (t *Version) MarshalText() ([]byte, error) {
+	return t.serialize(0, false), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (t *Version) UnmarshalJSON(b []byte) error {
+	if len(b) > 2 && b[0] == '"' || b[0] == '\'' || b[0] == '`' {
+		// We can ignore the closing because the JSON engine will throw an error on any mismatch for us.
+		return t.Parse(string(b[1 : len(b)-1]))
+	}
+	return t.Parse(string(b))
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (t *Version) UnmarshalText(b []byte) error {
+	return t.Parse(string(b))
 }
