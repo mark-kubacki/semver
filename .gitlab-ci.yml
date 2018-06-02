@@ -28,6 +28,7 @@ get_dependencies:
   <<: *use_dependencies
   script:
   - go get -d -t ./...
+  - go get -d github.com/smartystreets/goconvey
   cache:
     key: "$CI_PROJECT_NAME-$CI_BUILD_REF_NAME"
     policy: pull-push
