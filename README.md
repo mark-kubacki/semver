@@ -2,8 +2,6 @@ Semantic Versioning for Golang
 ==============================
 
 [![build status](https://hub.blitznote.com/mark/semver/badges/master/build.svg)](https://hub.blitznote.com/mark/semver/commits/master)
-[![Codebeat Badge](https://codebeat.co/badges/f4952f49-2c84-423e-af7b-817616e5f48e)](https://codebeat.co/projects/github-com-wmark-semver)
-[![Coverage Status](https://coveralls.io/repos/wmark/semver/badge.png?branch=master)](https://coveralls.io/r/wmark/semver?branch=master)
 [![GoDoc](https://godoc.org/github.com/wmark/semver?status.png)](https://godoc.org/github.com/wmark/semver)
 
 A library for parsing and processing of *Versions* and *Ranges* in:
@@ -11,9 +9,8 @@ A library for parsing and processing of *Versions* and *Ranges* in:
 * [Semantic Versioning](http://semver.org/) (semver) v2.0.0 notation
   * used by npmjs.org, pypi.org…
 * Gentoo's ebuild format
-* NPM
 
-Does not use regular expressions.
+Does neither use *regular expressions* nor *reflection*.
 
 ```bash
 $ go test -run=XXX -benchmem -bench=.
@@ -72,30 +69,6 @@ which almost always work.
 Contribute
 ----------
 
-Please open issues with minimal examples of what is going wrong. For example:
-
-    Mark, this does not work but I feel that it should:
-
-    ```go
-    v, err := semver.Version("17.1o0")
-    # yields an error
-    # I expected 17.100
-    ```
-
-Please write a test case with your expectations, if you ask for a new feature.
-
-    I'd like **semver.Range** to support interface **expvar.Var**, like this:
-
-    ```go
-    Convey("Range implements interface's expvar.Var…", t, func() {
-      r, _ := NewRange("1.2.3")
-      
-      Convey("String()", func() {
-        So(r.String(), ShouldEqual, "1.2.3")
-      })
-    })
-    ```
-
-Pull requests are welcome.
-Please add your name and email address to a file *AUTHORS* and/or *CONTRIBUTORS*.
+Pull requests are welcome.  
+Please add your name and email address to a file *AUTHORS* and/or *CONTRIBUTORS*.  
 Thanks!
