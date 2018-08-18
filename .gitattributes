@@ -2,3 +2,6 @@
 
 *.yml     text eol=lf core.whitespace whitespace=tab-in-indent,trailing-space,tabwidth=2
 .git*     text eol=auto core.whitespace whitespace=trailing-space
+
+AUTHORS      text eol=auto whitespace=trailing-space
+CONTRIBUTORS text eol=auto whitespace=trailing-space

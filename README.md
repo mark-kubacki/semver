@@ -30,6 +30,10 @@ Usage
 -----
 ```bash
 $ go get -v -d github.com/wmark/semver
+
+or, better yet,
+
+$ dep ensure --add github.com/wmark/semver@^1
 ```
 
 ```go
