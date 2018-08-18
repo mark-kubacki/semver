@@ -9,7 +9,7 @@ stages:
   before_script:
   - mkdir -p _vendor-cache /var/go/ours
   - ln -s "$(pwd -P)/_vendor-cache" /var/go/theirs
-  - export GOPATH=/var/go/theirs:/var/go/ours
+  - export GOPATH=/var/go/theirs:/var/go/ours:/usr/share/gocode
 
   - export GODIR=/var/go/ours/src/$BUILD_SOURCE
   - mkdir -p "$(dirname "$GODIR")"
@@ -28,7 +28,6 @@ get_dependencies:
   <<: *use_dependencies
   script:
   - go get -d -t ./...
-  - go get -d github.com/smartystreets/goconvey
   cache:
     key: "$CI_PROJECT_NAME-$CI_BUILD_REF_NAME"
     policy: pull-push
