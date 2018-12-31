@@ -1,0 +1,65 @@
+# It's handy to later browse the logs trying to learn if an error is common to all runs of a language.
+tags: ['golang', 'semver']
+# Makes it easier to repurpose this file.
+substitutions:
+  _PROJECT_ROOT: 'github.com/wmark/semver'
+
+# Google's default image lacks some tools I frequently use.
+# Therefore steps don't start like this:
+#  name: 'gcr.io/cloud-builders/go'
+#  env: ['PROJECT_ROOT=${_PROJECT_ROOT}']
+
+steps:
+# Updates the cache of third-party modules on the supplied volume.
+# Said volume gets eventually discarded.
+- &use_go
+  name: 'blitznote/golang'
+  volumes:
+  - name: 'third-party-sources'
+    path: '/var/go/theirs'
+  env: ['GOPATH=/var/go/theirs:/go:/usr/share/gocode']
+  dir: '/go/src/${_PROJECT_ROOT}'
+  id: 'get_dependencies'
+  args: ['go', 'get', '-d', '-t', './...']
+# 'gofmt' only cares for the format, and doesn't touch any dependencies,
+# thus can be a parallel run.
+# Usually you'd go about this differently:
+#   gofiles=$(git diff --cached --name-only --diff-filter=ACM "${origin}/master" | grep '\.go$')
+#   gofmt -l $gofiles
+- name: 'blitznote/golang'
+  env: ['GOPATH=/var/go/theirs:/go:/usr/share/gocode']
+  dir: '/go/src/${_PROJECT_ROOT}'
+  id: 'gofmt_check'
+  args: ['bash', '-c', 'diff <(echo -n) <(gofmt -s -d $(find . -type f -name "*.go" -not -path "./_*"))']
+
+# Now come steps (in Gitlab this were one stage actually) common to most projects written in Golang.
+# Ideally run parallel.
+- <<: *use_go
+  id: 'vet'
+  waitFor: ['get_dependencies']
+  args: ['go', 'vet', './...']
+- <<: *use_go
+  id: 'ineffassign'
+  waitFor: ['get_dependencies']
+  args: ['ineffassign', '.']
+- <<: *use_go
+  id: 'lint'
+  waitFor: ['get_dependencies']
+  args: ['golint', './...']
+- <<: *use_go
+  id: 'unittests'
+  waitFor: ['get_dependencies']
+  args: ['go', 'test', '-v', './...']
+
+# Build, but discard any artifacts.
+# No 'waitFor' means any previous steps must have completed.
+# If you only have one build, then it's okay to omit it; else you miss out on the chance to run builds concurrently.
+- &build_go
+  <<: *use_go
+  waitFor: ['get_dependencies', 'gofmt_check', 'vet', 'ineffassign', 'lint', 'unittests']
+  id: 'build_linux_amd64'
+  env: ['GOPATH=/var/go/theirs:/go:/usr/share/gocode', 'GOARCH=amd64', 'GOOS=linux']
+  args: ['go', 'build', '.', 'errors']
+- <<: *build_go
+  id: 'build_windows_amd64'
+  env: ['GOPATH=/var/go/theirs:/go:/usr/share/gocode', 'GOARCH=amd64', 'GOOS=windows']
