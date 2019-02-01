@@ -13,7 +13,7 @@ import (
 // Errors that are thrown when translating from a string.
 const (
 	errInvalidVersionString InvalidStringValue = "Given string does not resemble a Version"
-	errTooMuchColumns       InvalidStringValue = "Version consists of too much columns"
+	errTooManyColumns       InvalidStringValue = "Version consists of too many columns"
 	errVersionStringLength  InvalidStringValue = "Version is too long"
 	errInvalidBuildSuffix   InvalidStringValue = "Version has a '+' but no +buildNNN suffix"
 )
@@ -97,7 +97,7 @@ func (t *Version) Parse(str string) error {
 		switch {
 		case '0' <= r && r <= '9':
 			if column == 4 {
-				return errTooMuchColumns
+				return errTooManyColumns
 			}
 			column++
 			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
