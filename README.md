@@ -1,7 +1,6 @@
 Semantic Versioning for Golang
 ==============================
 
-[![build status](https://hub.blitznote.com/mark/semver/badges/master/build.svg)](https://hub.blitznote.com/mark/semver/commits/master)
 [![GoDoc](https://godoc.org/github.com/wmark/semver?status.png)](https://godoc.org/github.com/wmark/semver)
 
 A library for parsing and processing of *Versions* and *Ranges* in:
@@ -10,7 +9,7 @@ A library for parsing and processing of *Versions* and *Ranges* in:
   * used by npmjs.org, pypi.org…
 * Gentoo's ebuild format
 
-Does not use *regular expressions* nor *reflection*.
+Does not rely on *regular expressions* and does not use package *reflection*.
 
 ```bash
 $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
