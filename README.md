@@ -14,13 +14,13 @@ Does not rely on *regular expressions* and does not use package *reflection*.
 ```bash
 $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
-BenchmarkHashicorpNewVersion-24          1000000  1272 ns/op   432 B/op   5 allocs/op
-BenchmarkBlangMake-24                    3000000   545 ns/op    96 B/op   3 allocs/op
-BenchmarkSemverNewVersion-24            20000000    78.7 ns/op   0 B/op   0 allocs/op ←
+BenchmarkHashicorpNewVersion-24          1000000  1175 ns/op   432 B/op   5 allocs/op
+BenchmarkBlangMake-24                    3000000   525 ns/op    96 B/op   3 allocs/op
+BenchmarkSemverNewVersion-24            20000000    67.6 ns/op   0 B/op   0 allocs/op ←
 
-BenchmarkHashicorpNewConstraint-24        300000  5199 ns/op  1680 B/op  18 allocs/op
-BenchmarkBlangParseRange-24              1000000  1346 ns/op   400 B/op  10 allocs/op
-BenchmarkSemverNewRange-24               5000000   240 ns/op     0 B/op   0 allocs/op ←
+BenchmarkHashicorpNewConstraint-24        300000  4392 ns/op  1680 B/op  18 allocs/op
+BenchmarkBlangParseRange-24              1000000  1300 ns/op   400 B/op  10 allocs/op
+BenchmarkSemverNewRange-24              10000000   200 ns/op     0 B/op   0 allocs/op ←
 ```
 
 Licensed under a [BSD-style license](LICENSE).

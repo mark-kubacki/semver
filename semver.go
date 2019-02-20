@@ -90,16 +90,13 @@ func (t *Version) Parse(str string) error {
 		idx++
 	}
 
+	t.version = [14]int32{}
 	t.build = 0
 
 	for idx < strlen {
 		r := str[idx]
 		switch {
 		case '0' <= r && r <= '9':
-			if column == 4 {
-				return errTooManyColumns
-			}
-			column++
 			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
 				p := str[toIdx]
 				if !('0' <= p && p <= '9') {
@@ -107,18 +104,37 @@ func (t *Version) Parse(str string) error {
 				}
 			}
 
-			if fieldNum == idxReleaseType || fieldNum == idxSpecifierType {
-				fieldNum++
-			}
-
 			n, err := strconv.Atoi(str[idx:toIdx])
 			if err != nil {
 				return err
 			}
+
 			t.version[fieldNum] = int32(n)
 
 			idx = toIdx
+		case r == '.':
+			idx++
+			column++
+			if column >= 4 {
+				return errTooManyColumns
+			}
 			fieldNum++
+		case r == '-' || r == '_':
+			idx++
+			if idx < strlen && ('0' <= str[idx] && str[idx] <= '9') {
+				column = 0
+				switch {
+				case fieldNum < idxReleaseType:
+					fieldNum = idxReleaseType + 1
+				case fieldNum < idxSpecifierType:
+					fieldNum = idxSpecifierType + 1
+				default:
+					return errInvalidVersionString
+				}
+				continue
+			}
+			r = str[idx]
+			fallthrough
 		case 'a' <= r && r <= 'z':
 			column = 0
 			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
@@ -133,29 +149,20 @@ func (t *Version) Parse(str string) error {
 				return errInvalidVersionString
 			}
 			switch {
-			case fieldNum <= idxReleaseType:
+			case fieldNum < idxReleaseType:
 				fieldNum = idxReleaseType
-			case fieldNum <= idxSpecifierType:
+			case fieldNum < idxSpecifierType:
 				fieldNum = idxSpecifierType
 			default:
 				return errInvalidVersionString
 			}
 			t.version[fieldNum] = int32(typ)
+			fieldNum++
+			if toIdx+1 < strlen && str[toIdx] == '.' {
+				toIdx++
+			}
 
 			idx = toIdx
-			fieldNum++
-		case r == '.':
-			idx++
-		case r == '-' || r == '_':
-			idx++
-			switch {
-			case fieldNum <= idxReleaseType:
-				fieldNum = idxReleaseType
-			case fieldNum <= idxSpecifierType:
-				fieldNum = idxSpecifierType
-			default:
-				return errInvalidVersionString
-			}
 		case r == '+':
 			if strlen < idx+7 || str[idx:idx+6] != "+build" {
 				return errInvalidBuildSuffix
@@ -169,15 +176,6 @@ func (t *Version) Parse(str string) error {
 		default:
 			return errInvalidVersionString
 		}
-
-		if fieldNum > 14 {
-			return errVersionStringLength
-		}
-	}
-
-	for fieldNum < len(t.version) {
-		t.version[fieldNum] = 0
-		fieldNum++
 	}
 
 	return nil

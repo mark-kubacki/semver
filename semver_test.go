@@ -54,6 +54,12 @@ func TestNewVersion(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(refVer.version, ShouldResemble, [...]int32{1, 23, 8, 0, common, 3, 0, 0, 0, common, 0, 0, 0, 0})
 		})
+
+		Convey("0-0-0.0.0.4", func() {
+			refVer, err := NewVersion("0-0-0.0.0.4")
+			So(err, ShouldBeNil)
+			So(refVer.version, ShouldResemble, [...]int32{0, 0, 0, 0, common, 0, 0, 0, 0, common, 0, 0, 0, 4})
+		})
 	})
 }
 
