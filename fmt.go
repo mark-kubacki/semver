@@ -20,39 +20,45 @@ func numDecimalPlaces(n int32) int {
 // and returns it as slice.
 // Set |minPlaces| to how many columns the prefix must contain.
 func (t *Version) serialize(minPlaces int, quoted bool) []byte {
-	var idx, bytesNeeded int
+	var idx, lastNonZero, bytesNeeded int
 
 	if quoted {
 		bytesNeeded = 2
 	}
 
+	for idx, elem := range t.version {
+		if elem != 0 {
+			lastNonZero = idx
+		}
+	}
+
 	// Determine how much target space is needed (i.e. the string length).
-	for idx = 0; idx <= len(t.version); idx += 5 {
+	for idx = 0; idx < len(t.version); idx += 5 {
 		switch {
-		case t.version[idx+3] != 0 || minPlaces >= 4:
+		case t.version[idx+3] != 0 || minPlaces >= idx+4:
 			bytesNeeded += 1 + numDecimalPlaces(t.version[idx+3])
 			fallthrough
-		case t.version[idx+2] != 0 || minPlaces >= 3:
+		case t.version[idx+2] != 0 || minPlaces >= idx+3:
 			bytesNeeded += 1 + numDecimalPlaces(t.version[idx+2])
 			fallthrough
-		case t.version[idx+1] != 0 || minPlaces >= 2:
+		case t.version[idx+1] != 0 || minPlaces >= idx+2:
 			bytesNeeded += 1 + numDecimalPlaces(t.version[idx+1])
 			fallthrough
 		default:
 			bytesNeeded += numDecimalPlaces(t.version[idx])
 		}
-		if t.version[idx+4] != 0 {
-			bytesNeeded += 1 + len(releaseDesc[int(t.version[idx+4])])
+		if idx+4 >= len(t.version) {
+			break
 		}
 
-		remainderEmpty := true
-		for j := idx + 5; j < len(t.version); j++ {
-			if t.version[j] != 0 {
-				remainderEmpty = false
-				break
-			}
+		if idx+4 <= lastNonZero { // X.Y.Z.N - ?a.b.c.d
+			bytesNeeded += 1
 		}
-		if remainderEmpty {
+		if t.version[idx+4] != 0 { // alpha, beta, …
+			bytesNeeded += len(releaseDesc[int(t.version[idx+4])])
+		}
+
+		if lastNonZero <= idx+4 { // We're done if the remainder is empty.
 			break
 		}
 	}
@@ -90,19 +96,18 @@ func (t *Version) serialize(minPlaces int, quoted bool) []byte {
 		default:
 			target = strconv.AppendUint(target, uint64(t.version[idx]), 10)
 		}
-		if t.version[idx+4] != 0 {
+		if idx+4 >= len(t.version) {
+			break
+		}
+
+		if idx+4 <= lastNonZero {
 			target = append(target, '-')
+		}
+		if t.version[idx+4] != 0 {
 			target = append(target, []byte(releaseDesc[int(t.version[idx+4])])...)
 		}
 
-		remainderEmpty := true
-		for j := idx + 5; j < len(t.version); j++ {
-			if t.version[j] != 0 {
-				remainderEmpty = false
-				break
-			}
-		}
-		if remainderEmpty {
+		if lastNonZero <= idx+4 {
 			break
 		}
 		minPlaces -= 5

@@ -35,16 +35,27 @@ func TestSerialization(t *testing.T) {
 		})
 
 		Convey("will be serialized correctly", func() {
-			given, _ := NewVersion("2.31.4")
-			t := struct{ Ver Version }{given}
+			for _, str := range []string{
+				"2.31.4", "14.9", "1.5.3.1", "8",
+				"8+build66",
+				"1.5.1-3", "1.12-rc2",
+				"0-0-0.0.0.4",
+			} {
+				given, err := NewVersion(str)
+				So(err, ShouldBeNil)
+				if err != nil {
+					continue
+				}
+				t := struct{ Ver Version }{given}
 
-			out, err := json.Marshal(&given)
-			So(err, ShouldBeNil)
-			So(string(out), ShouldEqual, `"2.31.4"`) // cast to 'string' for legibility
+				out, err := json.Marshal(&given)
+				So(err, ShouldBeNil)
+				So(string(out), ShouldEqual, `"`+str+`"`) // cast to 'string' for legibility
 
-			out, err = json.Marshal(&t)
-			So(err, ShouldBeNil)
-			So(string(out), ShouldEqual, `{"Ver":"2.31.4"}`) // cast to 'string' for legibility
+				out, err = json.Marshal(&t)
+				So(err, ShouldBeNil)
+				So(string(out), ShouldEqual, `{"Ver":"`+str+`"}`) // cast to 'string' for legibility
+			}
 		})
 	})
 }
