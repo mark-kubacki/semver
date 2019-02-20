@@ -4,7 +4,10 @@
 
 package semver
 
-import "strings"
+import (
+	"bytes"
+	"strings"
+)
 
 // Errors which can be encountered when parsing into a Range.
 const (
@@ -22,7 +25,7 @@ type Range struct {
 	equalsUpper bool
 }
 
-// NewRange translates a string into a Range.
+// NewRange translates into a Range.
 func NewRange(str string) (Range, error) {
 	if str == "*" || str == "x" || str == "" {
 		// an empty Range contains everything
@@ -76,24 +79,24 @@ func NewRange(str string) (Range, error) {
 	}
 	vr := Range{}
 	if leftEnd == rightStart {
-		err := vr.setBound(str, lowerBound, upperBound)
+		err := vr.setBound([]byte(str), lowerBound, upperBound)
 		return vr, err
 	}
 
 	if leftEnd == 0 {
 		leftEnd = len(str)
 	}
-	if err := vr.setBound(str[:leftEnd], true, false); err != nil {
+	if err := vr.setBound([]byte(str[:leftEnd]), true, false); err != nil {
 		return vr, err
 	}
-	if err := vr.setBound(str[rightStart:], false, true); err != nil {
+	if err := vr.setBound([]byte(str[rightStart:]), false, true); err != nil {
 		return vr, err
 	}
 
 	return vr, nil
 }
 
-func (r *Range) setBound(str string, isLower, isUpper bool) error {
+func (r *Range) setBound(str []byte, isLower, isUpper bool) error {
 	var versionStartIdx int
 	for ; versionStartIdx < len(str); versionStartIdx++ {
 		r := str[versionStartIdx]
@@ -104,13 +107,13 @@ func (r *Range) setBound(str string, isLower, isUpper bool) error {
 	return errInvalidVersionString
 
 startFound:
-	num, err := NewVersion(str[versionStartIdx:])
+	num := Version{}
+	err := num.unmarshalText(str[versionStartIdx:])
 	if err != nil {
 		return err
 	}
 
-	prefix := str[:versionStartIdx]
-	equalOk := versionStartIdx == 0 || strings.Contains(prefix, "=")
+	equalOk := versionStartIdx == 0 || bytes.IndexByte(str[:versionStartIdx], '=') > 0
 	if isUpper {
 		r.equalsUpper = equalOk
 		r.upper = num
@@ -129,7 +132,7 @@ startFound:
 // are declared using prefixes.
 func newRangeByShortcut(str string) (Range, error) {
 	t := strings.TrimLeft(str, "~^")
-	num, err := NewVersion(t)
+	num, err := NewVersion([]byte(t))
 	if err != nil {
 		return Range{}, err
 	}
@@ -238,7 +241,7 @@ func (r *Range) satisfiesUpperBound(v *Version) bool {
 // Satisfies is a convenience function for former NodeJS developers
 // which works on two strings.
 func Satisfies(aVersion, aRange string) (bool, error) {
-	v, err := NewVersion(aVersion)
+	v, err := NewVersion([]byte(aVersion))
 	if err != nil {
 		return false, err
 	}

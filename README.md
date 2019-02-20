@@ -16,11 +16,11 @@ $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
 BenchmarkHashicorpNewVersion-24          1000000  1175 ns/op   432 B/op   5 allocs/op
 BenchmarkBlangMake-24                    3000000   525 ns/op    96 B/op   3 allocs/op
-BenchmarkSemverNewVersion-24            20000000    67.6 ns/op   0 B/op   0 allocs/op ←
+BenchmarkSemverNewVersion-24            20000000    61.6 ns/op   0 B/op   0 allocs/op ←
 
 BenchmarkHashicorpNewConstraint-24        300000  4392 ns/op  1680 B/op  18 allocs/op
 BenchmarkBlangParseRange-24              1000000  1300 ns/op   400 B/op  10 allocs/op
-BenchmarkSemverNewRange-24              10000000   200 ns/op     0 B/op   0 allocs/op ←
+BenchmarkSemverNewRange-24              10000000   158 ns/op     0 B/op   0 allocs/op ←
 ```
 
 Licensed under a [BSD-style license](LICENSE).
@@ -32,14 +32,14 @@ $ go get -v -d github.com/wmark/semver
 
 or, better yet,
 
-$ dep ensure --add github.com/wmark/semver@^1
+$ dep ensure --add github.com/wmark/semver@^2
 ```
 
 ```go
 import "github.com/wmark/semver"
 
-v1, err := semver.NewVersion("1.2.3-beta")
-v2, err := semver.NewVersion("2.0.0-alpha20140805.456-rc3+build1800")
+v1, err := semver.NewVersion([]byte("1.2.3-beta"))
+v2, err := semver.NewVersion([]byte("2.0.0-alpha20140805.456-rc3+build1800"))
 v1.Less(v2) // true
 
 r1, err := NewRange("~1.2")

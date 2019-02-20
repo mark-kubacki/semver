@@ -113,7 +113,7 @@ func (t *Version) serialize(minPlaces int, quoted bool) []byte {
 		minPlaces -= 5
 	}
 	if t.build != 0 {
-		target = append(target, []byte("+build")...)
+		target = append(target, buildsuffix...)
 		target = strconv.AppendUint(target, uint64(t.build), 10)
 	}
 	if quoted {
@@ -135,7 +135,7 @@ func (t *Version) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (t *Version) UnmarshalBinary(b []byte) error {
-	return t.Parse(string(b))
+	return t.UnmarshalText(b)
 }
 
 // String returns the string representation of t.
@@ -164,5 +164,7 @@ func (t *Version) UnmarshalJSON(b []byte) error {
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
 func (t *Version) UnmarshalText(b []byte) error {
-	return t.Parse(string(b))
+	t.version = [14]int32{}
+	t.build = 0
+	return t.unmarshalText(b)
 }

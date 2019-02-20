@@ -17,7 +17,7 @@ func TestSerialization(t *testing.T) {
 			Convey("if quoted", func() {
 				in := []byte(`{"ver": "2.31.4"}`)
 				var out struct{ Ver Version }
-				expect, _ := NewVersion("2.31.4")
+				expect, _ := NewVersion([]byte("2.31.4"))
 
 				err := json.Unmarshal(in, &out)
 				So(err, ShouldBeNil)
@@ -26,7 +26,7 @@ func TestSerialization(t *testing.T) {
 			Convey("even without quotes", func() {
 				in := []byte(`{"ver": 2}`)
 				var out struct{ Ver Version }
-				expect, _ := NewVersion("v2")
+				expect, _ := NewVersion([]byte("v2"))
 
 				err := json.Unmarshal(in, &out)
 				So(err, ShouldBeNil)
@@ -41,7 +41,7 @@ func TestSerialization(t *testing.T) {
 				"1.5.1-3", "1.12-rc2",
 				"0-0-0.0.0.4",
 			} {
-				given, err := NewVersion(str)
+				given, err := NewVersion([]byte(str))
 				So(err, ShouldBeNil)
 				if err != nil {
 					continue
@@ -50,11 +50,11 @@ func TestSerialization(t *testing.T) {
 
 				out, err := json.Marshal(&given)
 				So(err, ShouldBeNil)
-				So(string(out), ShouldEqual, `"`+str+`"`) // cast to 'string' for legibility
+				So(string(out), ShouldEqual, `"`+string(str)+`"`) // cast to 'string' for legibility
 
 				out, err = json.Marshal(&t)
 				So(err, ShouldBeNil)
-				So(string(out), ShouldEqual, `{"Ver":"`+str+`"}`) // cast to 'string' for legibility
+				So(string(out), ShouldEqual, `{"Ver":"`+string(str)+`"}`) // cast to 'string' for legibility
 			}
 		})
 	})

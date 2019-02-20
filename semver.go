@@ -7,7 +7,7 @@
 package semver
 
 import (
-	"strconv"
+	"bytes"
 )
 
 // Errors that are thrown when translating from a string.
@@ -55,6 +55,8 @@ var releaseValue = map[string]int{
 	"p":     patch,
 }
 
+var buildsuffix = []byte("+build")
+
 // InvalidStringValue is returned as error when translating a string into type fail.
 type InvalidStringValue string
 
@@ -75,14 +77,39 @@ type Version struct {
 
 // NewVersion translates the given string, which must be free of whitespace,
 // into a single Version.
-func NewVersion(str string) (Version, error) {
+func NewVersion(str []byte) (Version, error) {
 	ver := Version{}
-	err := ver.Parse(str)
+	err := ver.unmarshalText([]byte(str))
 	return ver, err
 }
 
 // Parse reads a string into the given version, overwriting any existing values.
+//
+// Deprecated: Use the idiomatic UnmarshalText instead.
 func (t *Version) Parse(str string) error {
+	t.version = [14]int32{}
+	t.build = 0
+
+	return t.unmarshalText([]byte(str))
+}
+
+// atoui consumes up to n byte from b to convert them into |val|.
+func atoui(b []byte) (n int, val uint32) {
+	var ch byte
+	for _, ch = range b {
+		if !('0' <= ch && ch <= '9') || n >= 10 {
+			return
+		}
+		ch -= '0'
+		val = val*10 + uint32(ch)
+		n++
+	}
+	return
+}
+
+// unmarshalText implements the encoding.TextUnmarshaler interface,
+// but assumes the data structure is pristine.
+func (t *Version) unmarshalText(str []byte) error {
 	var idx, toIdx, fieldNum, column int
 	var strlen = len(str)
 
@@ -90,28 +117,17 @@ func (t *Version) Parse(str string) error {
 		idx++
 	}
 
-	t.version = [14]int32{}
-	t.build = 0
-
 	for idx < strlen {
 		r := str[idx]
 		switch {
 		case '0' <= r && r <= '9':
-			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
-				p := str[toIdx]
-				if !('0' <= p && p <= '9') {
-					break
-				}
+			idxDelta, n := atoui(str[idx:])
+			if idxDelta >= 9 { // strlen(maxInt) is 10
+				return errInvalidVersionString
 			}
-
-			n, err := strconv.Atoi(str[idx:toIdx])
-			if err != nil {
-				return err
-			}
-
 			t.version[fieldNum] = int32(n)
 
-			idx = toIdx
+			idx += idxDelta
 		case r == '.':
 			idx++
 			column++
@@ -144,7 +160,7 @@ func (t *Version) Parse(str string) error {
 				}
 			}
 
-			typ, known := releaseValue[str[idx:toIdx]]
+			typ, known := releaseValue[string(str[idx:toIdx])]
 			if !known {
 				return errInvalidVersionString
 			}
@@ -164,12 +180,13 @@ func (t *Version) Parse(str string) error {
 
 			idx = toIdx
 		case r == '+':
-			if strlen < idx+7 || str[idx:idx+6] != "+build" {
+			if strlen < idx+len(buildsuffix)+1 || !bytes.Equal(str[idx:idx+len(buildsuffix)], buildsuffix) {
 				return errInvalidBuildSuffix
 			}
-			n, err := strconv.Atoi(str[idx+6:])
-			if err != nil {
-				return err
+			idx += len(buildsuffix)
+			idxDelta, n := atoui(str[idx:])
+			if idxDelta > 9 || idx+idxDelta < strlen {
+				return errInvalidBuildSuffix
 			}
 			t.build = int32(n)
 			return nil
