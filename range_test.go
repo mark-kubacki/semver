@@ -86,7 +86,7 @@ func TestRangeConstruction(t *testing.T) {
 		ver, _ := NewVersion([]byte("1.2.3"))
 
 		Convey("specific Range 1.2.3", func() {
-			verRange, err := NewRange("1.2.3")
+			verRange, err := NewRange([]byte("1.2.3"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -102,7 +102,7 @@ func TestRangeConstruction(t *testing.T) {
 	v200, _ := NewVersion([]byte("2.0.0"))
 
 	Convey("Range >=1.2.3 <=1.3.0…", t, func() {
-		verRange, err := NewRange(">=1.2.3 <=1.3.0")
+		verRange, err := NewRange([]byte(">=1.2.3 <=1.3.0"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -118,7 +118,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range >1.2.3 <1.3.0…", t, func() {
-		verRange, err := NewRange(">1.2.3 <1.3.0")
+		verRange, err := NewRange([]byte(">1.2.3 <1.3.0"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -134,7 +134,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range 1.2.3 - 1.3.0…", t, func() {
-		verRange, err := NewRange("1.2.3 - 1.3.0")
+		verRange, err := NewRange([]byte("1.2.3 - 1.3.0"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -150,7 +150,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range ~1.2.3 equals: >=1.2.3 <1.3.0", t, func() {
-		verRange, err := NewRange("~1.2.3")
+		verRange, err := NewRange([]byte("~1.2.3"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -166,7 +166,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range ^1.2.3 equals: >=1.2.3 <2.0.0", t, func() {
-		verRange, err := NewRange("^1.2.3")
+		verRange, err := NewRange([]byte("^1.2.3"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -182,7 +182,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range ~1.2 equals: >=1.2.0 <1.3.0", t, func() {
-		verRange, err := NewRange("~1.2")
+		verRange, err := NewRange([]byte("~1.2"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -198,7 +198,7 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range ^1.2 equals: >=1.2.0 <2.0.0", t, func() {
-		verRange, err := NewRange("^1.2")
+		verRange, err := NewRange([]byte("^1.2"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -214,12 +214,12 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Ranges ^1 and ~1 equal: >=1.0.0 <2.0.0", t, func() {
-		r1, err := NewRange("^1")
+		r1, err := NewRange([]byte("^1"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
 		}
-		r2, err := NewRange("^1")
+		r2, err := NewRange([]byte("^1"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -237,10 +237,10 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Given .x and .* notations", t, func() {
-		refRange, _ := NewRange("^1")
+		refRange, _ := NewRange([]byte("^1"))
 
 		Convey("1.x equals ^1", func() {
-			r1, err := NewRange("1.x")
+			r1, err := NewRange([]byte("1.x"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -249,7 +249,7 @@ func TestRangeConstruction(t *testing.T) {
 		})
 
 		Convey("1.* equals ^1", func() {
-			r1, err := NewRange("1.*")
+			r1, err := NewRange([]byte("1.*"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -258,7 +258,7 @@ func TestRangeConstruction(t *testing.T) {
 		})
 
 		Convey("1 equals ^1", func() {
-			r1, err := NewRange("1")
+			r1, err := NewRange([]byte("1"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -266,10 +266,10 @@ func TestRangeConstruction(t *testing.T) {
 			testIfResembles(r1, refRange)
 		})
 
-		smallRange, _ := NewRange("~1.2")
+		smallRange, _ := NewRange([]byte("~1.2"))
 
 		Convey("1.2.x equals ~1.2", func() {
-			r1, err := NewRange("1.2.x")
+			r1, err := NewRange([]byte("1.2.x"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -278,7 +278,7 @@ func TestRangeConstruction(t *testing.T) {
 		})
 
 		Convey("1.2.* equals ~1.2", func() {
-			r1, err := NewRange("1.2.*")
+			r1, err := NewRange([]byte("1.2.*"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -287,7 +287,7 @@ func TestRangeConstruction(t *testing.T) {
 		})
 
 		Convey("1.2 equals ~1.2", func() {
-			r1, err := NewRange("1.2")
+			r1, err := NewRange([]byte("1.2"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -300,7 +300,7 @@ func TestRangeConstruction(t *testing.T) {
 		refRange := Range{}
 
 		Convey("'x'", func() {
-			r1, err := NewRange("x")
+			r1, err := NewRange([]byte("x"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -309,7 +309,7 @@ func TestRangeConstruction(t *testing.T) {
 		})
 
 		Convey("'*'", func() {
-			r1, err := NewRange("*")
+			r1, err := NewRange([]byte("*"))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -318,7 +318,7 @@ func TestRangeConstruction(t *testing.T) {
 		})
 
 		Convey("'' (empty string)", func() {
-			r1, err := NewRange("")
+			r1, err := NewRange([]byte(""))
 			So(err, ShouldBeNil)
 			if err != nil {
 				return
@@ -329,12 +329,12 @@ func TestRangeConstruction(t *testing.T) {
 
 	// now come fringe cases
 	Convey("Range ^0.1.3 and ~0.1.3 equal: >=0.1.3 <0.2.0", t, func() {
-		r1, err := NewRange("^0.1.3")
+		r1, err := NewRange([]byte("^0.1.3"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
 		}
-		r2, err := NewRange("~0.1.3")
+		r2, err := NewRange([]byte("~0.1.3"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
@@ -354,17 +354,17 @@ func TestRangeConstruction(t *testing.T) {
 	})
 
 	Convey("Range ^0.0.2 and ~0.0.2 are 0.2.0", t, func() {
-		r1, err := NewRange("^0.0.2")
+		r1, err := NewRange([]byte("^0.0.2"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
 		}
-		r2, err := NewRange("~0.0.2")
+		r2, err := NewRange([]byte("~0.0.2"))
 		So(err, ShouldBeNil)
 		if err != nil {
 			return
 		}
-		r002, _ := NewRange("0.0.2")
+		r002, _ := NewRange([]byte("0.0.2"))
 
 		Convey("have the same bounds as 0.2.0", func() {
 			testIfResembles(r1, r002)
@@ -377,7 +377,7 @@ func TestSingleBound(t *testing.T) {
 
 	Convey("Given a specific version as Range…", t, func() {
 		Convey("1.2.3…", func() {
-			verRange, _ := NewRange("1.2.3")
+			verRange, _ := NewRange([]byte("1.2.3"))
 
 			Convey("reject Version 1.2.4", func() {
 				So(verRange, shouldNotContain, "1.2.4")
@@ -401,7 +401,7 @@ func TestSingleBound(t *testing.T) {
 		})
 
 		Convey("1.2.3-alpha20…", func() {
-			verRange, _ := NewRange("1.2.3-alpha20")
+			verRange, _ := NewRange([]byte("1.2.3-alpha20"))
 
 			Convey("accept Version 1.2.3-alpha20", func() {
 				So(verRange, shouldContain, "1.2.3-alpha20")
@@ -419,7 +419,7 @@ func TestSingleBound(t *testing.T) {
 	})
 
 	Convey("Given the lower bound >1.2.3", t, func() {
-		verRange, _ := NewRange(">1.2.3")
+		verRange, _ := NewRange([]byte(">1.2.3"))
 
 		Convey("reject Version 1.2.3", func() {
 			So(verRange, shouldNotContain, "1.2.3")
@@ -447,7 +447,7 @@ func TestSingleBound(t *testing.T) {
 	})
 
 	Convey("A lower bound >=1.2.3…", t, func() {
-		verRange, _ := NewRange(">=1.2.3")
+		verRange, _ := NewRange([]byte(">=1.2.3"))
 
 		Convey("should contain Version 1.2.3", func() {
 			So(verRange, shouldContain, "1.2.3")
@@ -463,7 +463,7 @@ func TestSingleBound(t *testing.T) {
 	})
 
 	Convey("Over-specific lower bounds >=1.2.3-alpha4…", t, func() {
-		verRange, _ := NewRange(">=1.2.3-alpha4")
+		verRange, _ := NewRange([]byte(">=1.2.3-alpha4"))
 
 		Convey("should contain Version 1.2.4", func() {
 			So(verRange, shouldContain, "1.2.4")
@@ -479,7 +479,7 @@ func TestSingleBound(t *testing.T) {
 	})
 
 	Convey("Upper bounds such as <1.2.3…", t, func() {
-		verRange, _ := NewRange("<1.2.3")
+		verRange, _ := NewRange([]byte("<1.2.3"))
 
 		Convey("reject Version 1.2.3", func() {
 			So(verRange, shouldNotContain, "1.2.3")
@@ -507,7 +507,7 @@ func TestSingleBound(t *testing.T) {
 	})
 
 	Convey("An over-specific upper bound <1.2.3-beta20…", t, func() {
-		verRange, _ := NewRange("<1.2.3-beta20")
+		verRange, _ := NewRange([]byte("<1.2.3-beta20"))
 
 		Convey("reject Version 1.2.3-beta20", func() {
 			So(verRange, shouldNotContain, "1.2.3-beta20")
@@ -535,7 +535,7 @@ func TestSingleBound(t *testing.T) {
 	})
 
 	Convey("An upper bound with equality <=1.2.3…", t, func() {
-		verRange, _ := NewRange("<=1.2.3")
+		verRange, _ := NewRange([]byte("<=1.2.3"))
 
 		Convey("should contain Version 1.2.3", func() {
 			So(verRange, shouldContain, "1.2.3")
@@ -608,7 +608,7 @@ func TestSatisfies(t *testing.T) {
 
 	Convey("Test the examples found in README file.", t, func() {
 		v, _ := NewVersion([]byte("1.2.3-beta"))
-		r, _ := NewRange("~1.2")
+		r, _ := NewRange([]byte("~1.2"))
 		So(r.Contains(&v), ShouldBeTrue)
 		So(r.IsSatisfiedBy(&v), ShouldBeFalse)
 	})
@@ -616,7 +616,7 @@ func TestSatisfies(t *testing.T) {
 
 func Example_range() {
 	var (
-		r, _      = NewRange("1.2–2.0")
+		r, _      = NewRange([]byte("1.2 - 2.0"))
 		beyond, _ = NewVersion([]byte("1.0"))
 		lower, _  = NewVersion([]byte("1.2"))
 		upper, _  = NewVersion([]byte("2.0"))
@@ -638,7 +638,7 @@ func Example_full() {
 	v2, _ := NewVersion([]byte("2.0.0-alpha20140805.456-rc3+build1800"))
 	fmt.Println(v1.Less(&v2))
 
-	r1, _ := NewRange("~1.2")
+	r1, _ := NewRange([]byte("~1.2"))
 	fmt.Println(r1.Contains(&v1))
 	fmt.Println(r1.IsSatisfiedBy(&v1)) // rejects pre-releases: alphas, betas…
 
@@ -648,12 +648,12 @@ func Example_full() {
 	// false
 }
 
-var benchR, benchRErr = NewRange(">=1.2.3 <=1.3.0")
+var benchR, benchRErr = NewRange([]byte(">=1.2.3 <=1.3.0"))
 
 func BenchmarkSemverNewRange(b *testing.B) {
-	var r, e = NewRange(">=1.2.3 <=1.3.0")
+	var r, e = NewRange([]byte(">=1.2.3 <=1.3.0"))
 	for n := 0; n < b.N; n++ {
-		r, e = NewRange(">=1.2.3 <=1.3.0")
+		r, e = NewRange([]byte(">=1.2.3 <=1.3.0"))
 	}
 	benchR, benchRErr = r, e
 }

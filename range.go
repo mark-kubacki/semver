@@ -6,7 +6,6 @@ package semver
 
 import (
 	"bytes"
-	"strings"
 )
 
 // Errors which can be encountered when parsing into a Range.
@@ -26,14 +25,14 @@ type Range struct {
 }
 
 // NewRange translates into a Range.
-func NewRange(str string) (Range, error) {
-	if str == "*" || str == "x" || str == "" {
+func NewRange(str []byte) (Range, error) {
+	if len(str) == 0 || (len(str) == 1 && (str[0] == '*' || str[0] == 'x')) {
 		// an empty Range contains everything
 		return Range{}, nil
 	}
 	isNaturalRange := true
-	if strings.HasSuffix(str, ".x") || strings.HasSuffix(str, ".*") {
-		str = strings.TrimRight(str, ".x*")
+	if bytes.HasSuffix(str, []byte(".x")) || bytes.HasSuffix(str, []byte(".*")) {
+		str = bytes.TrimRight(str, ".x*")
 		isNaturalRange = false
 	}
 	if str[0] == '^' || str[0] == '~' {
@@ -46,7 +45,7 @@ func NewRange(str string) (Range, error) {
 		if r == '.' {
 			leftDotCount++
 		}
-		if r == ' ' || r == '–' || r == ',' {
+		if r == ' ' || r == ',' {
 			if leftEnd == 0 {
 				leftEnd = i
 			}
@@ -61,9 +60,9 @@ func NewRange(str string) (Range, error) {
 			}
 		}
 		switch r {
-		case '<', '≤':
+		case '<':
 			lowerBound = false
-		case '>', '≥':
+		case '>':
 			upperBound = false
 		}
 	}
@@ -72,9 +71,9 @@ func NewRange(str string) (Range, error) {
 	if !isNaturalRange {
 		switch leftDotCount {
 		case 1:
-			return newRangeByShortcut("~" + str)
+			return newRangeByShortcut(append([]byte{'~'}, str...))
 		case 0:
-			return newRangeByShortcut("^" + str)
+			return newRangeByShortcut(append([]byte{'^'}, str...))
 		}
 	}
 	vr := Range{}
@@ -99,8 +98,7 @@ func NewRange(str string) (Range, error) {
 func (r *Range) setBound(str []byte, isLower, isUpper bool) error {
 	var versionStartIdx int
 	for ; versionStartIdx < len(str); versionStartIdx++ {
-		r := str[versionStartIdx]
-		if '0' <= r && r <= '9' {
+		if isNumeric(str[versionStartIdx]) {
 			goto startFound
 		}
 	}
@@ -130,23 +128,23 @@ startFound:
 
 // newRangeByShortcut covers the special case of Ranges whose boundaries
 // are declared using prefixes.
-func newRangeByShortcut(str string) (Range, error) {
-	t := strings.TrimLeft(str, "~^")
-	num, err := NewVersion([]byte(t))
+func newRangeByShortcut(str []byte) (Range, error) {
+	t := bytes.TrimLeft(str, "~^")
+	num, err := NewVersion(t)
 	if err != nil {
 		return Range{}, err
 	}
-	if strings.HasPrefix(t, "0.0.") {
+	if bytes.HasPrefix(t, []byte("0.0.")) {
 		return NewRange(t)
 	}
 
 	r := Range{lower: num, hasLower: true, equalsLower: true, upper: Version{}}
 
 	switch {
-	case strings.HasPrefix(t, "0."):
+	case bytes.HasPrefix(t, []byte("0.")):
 		r.upper.version[0] = r.lower.version[0]
 		r.upper.version[1] = r.lower.version[1] + 1
-	case str[0] == '^' || !strings.ContainsAny(t, "."):
+	case str[0] == '^' || bytes.IndexByte(t, '.') <= -1:
 		r.upper.version[0] = r.lower.version[0] + 1
 	case str[0] == '~':
 		r.upper.version[0] = r.lower.version[0]
@@ -245,7 +243,7 @@ func Satisfies(aVersion, aRange string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	r, err := NewRange(aRange)
+	r, err := NewRange([]byte(aRange))
 	if err != nil {
 		return false, err
 	}
