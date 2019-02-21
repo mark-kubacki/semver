@@ -93,11 +93,20 @@ func (t *Version) Parse(str string) error {
 	return t.unmarshalText([]byte(str))
 }
 
+func isNumeric(ch byte) bool {
+	return ((ch - '0') <= 9)
+}
+
+func isSmallLetter(ch byte) bool {
+	// case insensitive: (ch | 0x20)
+	return ((ch - 'a') <= ('z' - 'a'))
+}
+
 // atoui consumes up to n byte from b to convert them into |val|.
 func atoui(b []byte) (n int, val uint32) {
 	var ch byte
 	for _, ch = range b {
-		if !('0' <= ch && ch <= '9') || n >= 10 {
+		if !isNumeric(ch) || n >= 10 {
 			return
 		}
 		ch -= '0'
@@ -110,7 +119,7 @@ func atoui(b []byte) (n int, val uint32) {
 // unmarshalText implements the encoding.TextUnmarshaler interface,
 // but assumes the data structure is pristine.
 func (t *Version) unmarshalText(str []byte) error {
-	var idx, toIdx, fieldNum, column int
+	var idx, fieldNum, column int
 	var strlen = len(str)
 
 	if strlen > 1 && str[idx] == 'v' {
@@ -128,7 +137,7 @@ func (t *Version) unmarshalText(str []byte) error {
 			}
 			fieldNum++
 			fallthrough
-		case '0' <= r && r <= '9':
+		case isNumeric(r):
 			idxDelta, n := atoui(str[idx:])
 			if idxDelta >= 9 || idxDelta == 0 { // strlen(maxInt) is 10
 				return errInvalidVersionString
@@ -138,7 +147,7 @@ func (t *Version) unmarshalText(str []byte) error {
 			idx += idxDelta
 		case r == '-' || r == '_':
 			idx++
-			if idx < strlen && ('0' <= str[idx] && str[idx] <= '9') {
+			if idx < strlen && isNumeric(str[idx]) {
 				column = 0
 				switch {
 				case fieldNum < idxReleaseType:
@@ -150,15 +159,10 @@ func (t *Version) unmarshalText(str []byte) error {
 				}
 				continue
 			}
-			r = str[idx]
 			fallthrough
-		case 'a' <= r && r <= 'z':
-			column = 0
-			for toIdx = idx + 1; toIdx < strlen; toIdx++ {
-				p := str[toIdx]
-				if !('a' <= p && p <= 'z') {
-					break
-				}
+		case isSmallLetter(r):
+			toIdx := idx + 1
+			for ; toIdx < strlen && isSmallLetter(str[toIdx]); toIdx++ {
 			}
 
 			typ, known := releaseValue[string(str[idx:toIdx])]
@@ -174,11 +178,12 @@ func (t *Version) unmarshalText(str []byte) error {
 				return errInvalidVersionString
 			}
 			t.version[fieldNum] = int32(typ)
-			fieldNum++
 			if toIdx+1 < strlen && str[toIdx] == '.' {
 				toIdx++
 			}
 
+			fieldNum++
+			column = 0
 			idx = toIdx
 		case r == '+':
 			if strlen < idx+len(buildsuffix)+1 || !bytes.Equal(str[idx:idx+len(buildsuffix)], buildsuffix) {
