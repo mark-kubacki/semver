@@ -120,21 +120,22 @@ func (t *Version) unmarshalText(str []byte) error {
 	for idx < strlen {
 		r := str[idx]
 		switch {
+		case r == '.':
+			idx++
+			column++
+			if column >= 4 || idx >= strlen {
+				return errTooManyColumns
+			}
+			fieldNum++
+			fallthrough
 		case '0' <= r && r <= '9':
 			idxDelta, n := atoui(str[idx:])
-			if idxDelta >= 9 { // strlen(maxInt) is 10
+			if idxDelta >= 9 || idxDelta == 0 { // strlen(maxInt) is 10
 				return errInvalidVersionString
 			}
 			t.version[fieldNum] = int32(n)
 
 			idx += idxDelta
-		case r == '.':
-			idx++
-			column++
-			if column >= 4 {
-				return errTooManyColumns
-			}
-			fieldNum++
 		case r == '-' || r == '_':
 			idx++
 			if idx < strlen && ('0' <= str[idx] && str[idx] <= '9') {

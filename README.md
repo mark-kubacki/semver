@@ -16,7 +16,7 @@ $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
 BenchmarkHashicorpNewVersion-24          1000000  1175 ns/op   432 B/op   5 allocs/op
 BenchmarkBlangMake-24                    3000000   525 ns/op    96 B/op   3 allocs/op
-BenchmarkSemverNewVersion-24            20000000    61.6 ns/op   0 B/op   0 allocs/op ←
+BenchmarkSemverNewVersion-24            20000000    60.6 ns/op   0 B/op   0 allocs/op ←
 
 BenchmarkHashicorpNewConstraint-24        300000  4392 ns/op  1680 B/op  18 allocs/op
 BenchmarkBlangParseRange-24              1000000  1300 ns/op   400 B/op  10 allocs/op
@@ -61,6 +61,11 @@ It is, ordered from lowest to highest:
 Therefore it is:
 
     Version("1.0.0-pre1") < Version("1.0.0") < Version("1.0.0-p1")
+
+### Limitations
+
+Version 2 no longer supports dot-tag notation.
+That is, `1.8.rc2` will be rejected, valid are `1.8rc2` and `1.8-rc2`.
 
 Usage Note
 ----------

@@ -246,6 +246,13 @@ func TestVersion(t *testing.T) {
 			So(err, ShouldNotBeNil)
 		})
 
+		Convey("with surplus dots", func() {
+			_, err := NewVersion([]byte("1..8"))
+			So(err, ShouldNotBeNil)
+			_, err = NewVersion([]byte("1.8.rc2"))
+			So(err, ShouldNotBeNil)
+		})
+
 		Convey("with too long parts", func() {
 			_, err := NewVersion([]byte("100000000000007000000000000000070000000000000.0.0"))
 			So(err, ShouldNotBeNil)
