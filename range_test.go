@@ -371,6 +371,19 @@ func TestRangeConstruction(t *testing.T) {
 			testIfResembles(r2, r002)
 		})
 	})
+
+	Convey("Reject invalid ranges such as", t, func() {
+		for _, s := range []string{
+			" - 1.0", "- 1.0",
+			"1 - X", "X - 1",
+			"1 - 5.6.7.8.9", "1.2.3.4.5 - 1",
+		} {
+			Convey(s, func() {
+				_, err := NewRange([]byte(s))
+				So(err, ShouldNotBeNil)
+			})
+		}
+	})
 }
 
 func TestSingleBound(t *testing.T) {
@@ -420,6 +433,7 @@ func TestSingleBound(t *testing.T) {
 
 	Convey("Given the lower bound >1.2.3", t, func() {
 		verRange, _ := NewRange([]byte(">1.2.3"))
+		So(verRange.GetUpperBoundary(), ShouldBeNil)
 
 		Convey("reject Version 1.2.3", func() {
 			So(verRange, shouldNotContain, "1.2.3")
@@ -480,9 +494,14 @@ func TestSingleBound(t *testing.T) {
 
 	Convey("Upper bounds such as <1.2.3…", t, func() {
 		verRange, _ := NewRange([]byte("<1.2.3"))
+		So(verRange.GetLowerBoundary(), ShouldBeNil)
 
 		Convey("reject Version 1.2.3", func() {
 			So(verRange, shouldNotContain, "1.2.3")
+		})
+
+		Convey("reject nil", func() {
+			So(verRange.Contains(nil), ShouldBeFalse)
 		})
 
 		Convey("reject Version 1.2.3-alpha3 (ignore release/pre-release)", func() {

@@ -8,11 +8,6 @@ import (
 	"bytes"
 )
 
-// Errors which can be encountered when parsing into a Range.
-const (
-	errUnsupportedShortcutNotation InvalidStringValue = "Unsupported shortcut notation for Range"
-)
-
 // Range is a subset of the universe of Versions: It can have a lower and upper boundary.
 // For example, "1.2–2.0" is such a Range, with two boundaries.
 type Range struct {
@@ -149,8 +144,6 @@ func newRangeByShortcut(str []byte) (Range, error) {
 	case str[0] == '~':
 		r.upper.version[0] = r.lower.version[0]
 		r.upper.version[1] = r.lower.version[1] + 1
-	default:
-		return r, errUnsupportedShortcutNotation
 	}
 
 	return r, nil

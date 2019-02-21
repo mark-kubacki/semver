@@ -18,6 +18,7 @@ func TestSerialization(t *testing.T) {
 				in := []byte(`{"ver": "2.31.4"}`)
 				var out struct{ Ver Version }
 				expect, _ := NewVersion([]byte("2.31.4"))
+				So(expect.Bytes(), ShouldResemble, []byte("2.31.4"))
 
 				err := json.Unmarshal(in, &out)
 				So(err, ShouldBeNil)

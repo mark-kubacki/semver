@@ -240,7 +240,7 @@ func TestVersion(t *testing.T) {
 		So(v3.Less(&v4), ShouldBeTrue)
 	})
 
-	Convey("Reject too long Versions.", t, func() {
+	Convey("Reject invalid Versions.", t, func() {
 		Convey("with surplus digits", func() {
 			_, err := NewVersion([]byte("1.0.0.0.4"))
 			So(err, ShouldNotBeNil)
@@ -250,6 +250,32 @@ func TestVersion(t *testing.T) {
 			_, err := NewVersion([]byte("1..8"))
 			So(err, ShouldNotBeNil)
 			_, err = NewVersion([]byte("1.8.rc2"))
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("with unknown tags", func() {
+			_, err := NewVersion([]byte("1.8-gazilla"))
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("with fringe builds", func() {
+			_, err := NewVersion([]byte("10.0.17763.253+build19H3"))
+			So(err, ShouldNotBeNil)
+			_, err = NewVersion([]byte("10.0.17763.253+19H3"))
+			So(err, ShouldNotBeNil)
+			e := err.(InvalidStringValue)
+			So(e.IsInvalid(), ShouldBeTrue)
+		})
+
+		Convey("with excessive tags", func() {
+			_, err := NewVersion([]byte("1.8-alpha-beta-rc"))
+			So(err, ShouldNotBeNil)
+			_, err = NewVersion([]byte("1.8-alpha-beta3rc"))
+			So(err, ShouldNotBeNil)
+		})
+
+		Convey("with trailing dashes", func() {
+			_, err := NewVersion([]byte("5678.9-"))
 			So(err, ShouldNotBeNil)
 		})
 
