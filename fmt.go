@@ -52,7 +52,7 @@ func (t *Version) serialize(minPlaces int, quoted bool) []byte {
 		}
 
 		if idx+4 <= lastNonZero { // X.Y.Z.N - ?a.b.c.d
-			bytesNeeded += 1
+			bytesNeeded++
 		}
 		if t.version[idx+4] != 0 { // alpha, beta, …
 			bytesNeeded += len(releaseDesc[int(t.version[idx+4])])
