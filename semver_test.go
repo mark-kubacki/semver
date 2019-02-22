@@ -256,6 +256,10 @@ func TestVersion(t *testing.T) {
 		Convey("with unknown tags", func() {
 			_, err := NewVersion([]byte("1.8-gazilla"))
 			So(err, ShouldNotBeNil)
+			_, err = NewVersion([]byte("1.8-+build4"))
+			So(err, ShouldNotBeNil)
+			_, err = NewVersion([]byte("1.8-a"))
+			So(err, ShouldNotBeNil)
 		})
 
 		Convey("with fringe builds", func() {
