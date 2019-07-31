@@ -162,6 +162,9 @@ func (t *Version) unmarshalText(str []byte) error {
 			for ; toIdx < strlen && isSmallLetter(str[toIdx]); toIdx++ {
 			}
 
+			if toIdx > strlen {
+				return errInvalidVersionString
+			}
 			typ, known := releaseValue[string(str[idx:toIdx])]
 			if !known {
 				return errInvalidVersionString
