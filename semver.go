@@ -70,7 +70,7 @@ func (e InvalidStringValue) IsInvalid() bool { return true }
 // Columns consisting of up to four unsigned integers (1.2.4.99)
 // optionally further divided into 'release' and 'specifier' (1.2-634.0-99.8).
 type Version struct {
-	// 0–3: version, 4: releaseType, 5–8: releaseVer, 9: releaseSpecifier, 10–14: specifier
+	// 0–3: version, 4: releaseType, 5–8: releaseVer, 9: releaseSpecifier, 10–: specifier
 	version [14]int32
 	build   int32
 }
@@ -104,13 +104,12 @@ func isSmallLetter(ch byte) bool {
 
 // atoui consumes up to n byte from b to convert them into |val|.
 func atoui(b []byte) (n int, val uint32) {
-	var ch byte
-	for _, ch = range b {
-		if !isNumeric(ch) || n >= 10 {
+	for _, ch := range b {
+		v := ch - '0' // see above 'isNumeric'
+		if !(v <= 9) || n >= 10 {
 			return
 		}
-		ch -= '0'
-		val = val*10 + uint32(ch)
+		val = val*10 + uint32(v)
 		n++
 	}
 	return
@@ -207,16 +206,13 @@ func (t *Version) unmarshalText(str []byte) error {
 // signDelta returns the signum of the difference,
 // which' precision can be limited by 'cuttofIdx'.
 func signDelta(a, b [14]int32, cutoffIdx int) int8 {
-	//fmt.Println(a, b)
-	for i := range a {
-		if i >= cutoffIdx {
-			return 0
+	_ = a[0:cutoffIdx]
+	for i := 0; i < len(a) && i < cutoffIdx; i++ {
+		if a[i] == b[i] {
+			continue
 		}
-		if a[i] < b[i] {
-			return -1
-		} else if a[i] > b[i] {
-			return 1
-		}
+		x := a[i] - b[i]
+		return int8((x >> 31) - (-x >> 31))
 	}
 	return 0
 }
@@ -229,12 +225,19 @@ func signDelta(a, b [14]int32, cutoffIdx int) int8 {
 //
 // The 'build' is not compared.
 func Compare(a, b Version) int {
-	return int(signDelta(a.version, b.version, 14))
+	for i := 0; i < len(a.version); i++ {
+		if a.version[i] == b.version[i] {
+			continue
+		}
+		x := a.version[i] - b.version[i]
+		return int((x >> 31) - (-x >> 31))
+	}
+	return 0
 }
 
 // Less is a convenience function for sorting.
 func (t *Version) Less(o *Version) bool {
-	sd := signDelta(t.version, o.version, 15)
+	sd := Compare(*t, *o)
 	return sd < 0 || (sd == 0 && t.build < o.build)
 }
 

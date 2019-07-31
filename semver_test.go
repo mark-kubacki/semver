@@ -540,3 +540,15 @@ func BenchmarkSemverNewVersion(b *testing.B) {
 	}
 	benchV, benchErr = v, e
 }
+
+var compareResult = 5
+
+func BenchmarkSemverCompare(b *testing.B) {
+	v, _ := NewVersion(verForBenchmarks)
+	r := Compare(benchV, v)
+
+	for n := 0; n < b.N; n++ {
+		r = Compare(benchV, v)
+	}
+	compareResult = r
+}

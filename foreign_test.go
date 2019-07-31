@@ -29,6 +29,17 @@ func BenchmarkHashicorpNewConstraint(b *testing.B) {
 	benchHashicorpR, benchHashicorpRErr = r, e
 }
 
+var benchHashicorpResult = 5
+
+func BenchmarkHashicorpCompare(b *testing.B) {
+	var v, _ = hashicorp.NewVersion(string(verForBenchmarks))
+	r := benchHashicorpV.Compare(v)
+	for n := 0; n < b.N; n++ {
+		r = benchHashicorpV.Compare(v)
+	}
+	benchHashicorpResult = r
+}
+
 var benchBlangV, benchBlangErr = blang.Make("1.2.3-beta")
 
 func BenchmarkBlangMake(b *testing.B) {
@@ -47,4 +58,15 @@ func BenchmarkBlangParseRange(b *testing.B) {
 		r, e = blang.ParseRange(">=1.2.3 <=1.3.0")
 	}
 	benchBlangR, benchBlangRErr = r, e
+}
+
+var benchBlangResult = 5
+
+func BenchmarkBlangCompare(b *testing.B) {
+	var v, _ = blang.Make(string(verForBenchmarks))
+	r := benchBlangV.Compare(v)
+	for n := 0; n < b.N; n++ {
+		r = benchBlangV.Compare(v)
+	}
+	benchBlangResult = r
 }
