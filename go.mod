@@ -1,1 +1,1 @@
-module github.com/wmark/semver
+module blitznote.com/src/semver/v2
