@@ -60,6 +60,12 @@ func TestNewVersion(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(refVer.version, ShouldResemble, [...]int32{0, 0, 0, 0, common, 0, 0, 0, 0, common, 0, 0, 0, 4})
 		})
+
+		Convey("214748364 (maxInt32 clipped by one digit)", func() {
+			refVer, err := NewVersion([]byte("214748364"))
+			So(err, ShouldBeNil)
+			So(refVer.version, ShouldResemble, [...]int32{214748364, 0, 0, 0, common, 0, 0, 0, 0, common, 0, 0, 0, 0})
+		})
 	})
 }
 

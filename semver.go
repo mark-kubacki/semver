@@ -115,13 +115,12 @@ func isSmallLetter(ch byte) bool {
 
 // atoui consumes up to n byte from b to convert them into |val|.
 func atoui(b []byte) (n int, val uint32) {
-	for _, ch := range b {
-		v := ch - '0' // see above 'isNumeric'
-		if !(v <= 9) || n >= 10 {
-			return
+	for ; n <= 10 && n < len(b); n++ {
+		v := b[n] - '0' // see above 'isNumeric'
+		if v > 9 {
+			break
 		}
 		val = val*10 + uint32(v)
-		n++
 	}
 	return
 }
@@ -149,7 +148,7 @@ func (t *Version) unmarshalText(str []byte) error {
 			fallthrough
 		case isNumeric(r):
 			idxDelta, n := atoui(str[idx:])
-			if idxDelta >= 9 || idxDelta == 0 { // strlen(maxInt) is 10
+			if idxDelta == 0 || idxDelta >= 10 { // strlen(maxInt) is 10
 				return errInvalidVersionString
 			}
 			t.version[fieldNum] = int32(n)
