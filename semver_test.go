@@ -529,7 +529,8 @@ func ExampleVersion_LimitedEqual_third() {
 	// true
 }
 
-var verForBenchmarks = []byte("1.2.3-beta")
+var strForBenchmarks = "1.2.3-beta4.5.6"
+var verForBenchmarks = []byte(strForBenchmarks)
 var benchV, benchErr = NewVersion(append(verForBenchmarks, '5'))
 
 func BenchmarkSemverNewVersion(b *testing.B) {

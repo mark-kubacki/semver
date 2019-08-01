@@ -15,17 +15,17 @@ Does not rely on *regular expressions* neither does it use package *reflection*.
 $ sed -i -e 's@ignore@3rdparty@g' *_test.go
 $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
-BenchmarkHashicorpNewVersion-24          1000000  1805 ns/op   544 B/op   5 allocs/op
-BenchmarkBlangMake-24                    3000000   516 ns/op    96 B/op   3 allocs/op
-BenchmarkSemverNewVersion-24            20000000    60.6 ns/op   0 B/op   0 allocs/op ←
+BenchmarkHashicorpNewVersion-24          1000000  1800 ns/op   551 B/op   5 allocs/op
+BenchmarkBlangMake-24                    3000000   790 ns/op   320 B/op   5 allocs/op
+BenchmarkSemverNewVersion-24            30000000    48.5 ns/op   0 B/op   0 allocs/op ←
 
-BenchmarkHashicorpNewConstraint-24        200000  7033 ns/op  2096 B/op  18 allocs/op
-BenchmarkBlangParseRange-24              1000000  1600 ns/op   480 B/op  13 allocs/op
-BenchmarkSemverNewRange-24              10000000   158 ns/op     0 B/op   0 allocs/op ←
+BenchmarkHashicorpNewConstraint-24        200000  6350 ns/op  2096 B/op  18 allocs/op
+BenchmarkBlangParseRange-24              1000000  1440 ns/op   480 B/op  13 allocs/op
+BenchmarkSemverNewRange-24              10000000   133 ns/op     0 B/op   0 allocs/op ←
 
-BenchmarkHashicorpCompare-24             1000000  1075 ns/op   384 B/op  10 allocs/op
-BenchmarkBlangCompare-24               100000000    18.1 ns/op   0 B/op   0 allocs/op
-BenchmarkSemverCompare-24              100000000    15.0 ns/op   0 B/op   0 allocs/op ←
+BenchmarkHashicorpCompare-24             1000000  1005 ns/op   395 B/op  12 allocs/op
+BenchmarkBlangCompare-24               100000000    20.2 ns/op   0 B/op   0 allocs/op
+BenchmarkSemverCompare-24              100000000    14.6 ns/op   0 B/op   0 allocs/op ←
 
 ```
 
