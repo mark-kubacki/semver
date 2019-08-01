@@ -58,7 +58,7 @@ func shouldContain(aRange interface{}, aVersion ...interface{}) string {
 		if err != nil {
 			return err.Error()
 		}
-		if s := ShouldBeTrue(a.Contains(&ver)); s != "" {
+		if s := ShouldBeTrue(a.Contains(ver)); s != "" {
 			return v + " is not in Range"
 		}
 	}
@@ -73,7 +73,7 @@ func shouldNotContain(aRange interface{}, aVersion ...interface{}) string {
 		if err != nil {
 			return err.Error()
 		}
-		if s := ShouldBeFalse(a.Contains(&ver)); s != "" {
+		if s := ShouldBeFalse(a.Contains(ver)); s != "" {
 			return v + " is in Range"
 		}
 	}
@@ -500,10 +500,6 @@ func TestSingleBound(t *testing.T) {
 			So(verRange, shouldNotContain, "1.2.3")
 		})
 
-		Convey("reject nil", func() {
-			So(verRange.Contains(nil), ShouldBeFalse)
-		})
-
 		Convey("reject Version 1.2.3-alpha3 (ignore release/pre-release)", func() {
 			So(verRange, shouldNotContain, "1.2.3-alpha3")
 		})
@@ -628,8 +624,8 @@ func TestSatisfies(t *testing.T) {
 	Convey("Test the examples found in README file.", t, func() {
 		v, _ := NewVersion([]byte("1.2.3-beta"))
 		r, _ := NewRange([]byte("~1.2"))
-		So(r.Contains(&v), ShouldBeTrue)
-		So(r.IsSatisfiedBy(&v), ShouldBeFalse)
+		So(r.Contains(v), ShouldBeTrue)
+		So(r.IsSatisfiedBy(v), ShouldBeFalse)
 	})
 }
 
@@ -655,11 +651,11 @@ func Example_range() {
 func Example_full() {
 	v1, _ := NewVersion([]byte("1.2.3-beta"))
 	v2, _ := NewVersion([]byte("2.0.0-alpha20140805.456-rc3+build1800"))
-	fmt.Println(v1.Less(&v2))
+	fmt.Println(v1.Less(v2))
 
 	r1, _ := NewRange([]byte("~1.2"))
-	fmt.Println(r1.Contains(&v1))
-	fmt.Println(r1.IsSatisfiedBy(&v1)) // rejects pre-releases: alphas, betas…
+	fmt.Println(r1.Contains(v1))
+	fmt.Println(r1.IsSatisfiedBy(v1)) // rejects pre-releases: alphas, betas…
 
 	// Output:
 	// true

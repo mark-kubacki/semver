@@ -19,7 +19,7 @@ func numDecimalPlaces(n int32) int {
 // Serialize builds a minimal human-readable representation of this Version,
 // and returns it as slice.
 // Set |minPlaces| to how many columns the prefix must contain.
-func (t *Version) serialize(minPlaces int, quoted bool) []byte {
+func (t Version) serialize(minPlaces int, quoted bool) []byte {
 	var idx, lastNonZero, bytesNeeded int
 
 	if quoted {
@@ -124,12 +124,12 @@ func (t *Version) serialize(minPlaces int, quoted bool) []byte {
 }
 
 // Bytes returns a slice with the minimal human-readable representation of this Version.
-func (t *Version) Bytes() []byte {
+func (t Version) Bytes() []byte {
 	return t.serialize(0, false)
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (t *Version) MarshalBinary() ([]byte, error) {
+func (t Version) MarshalBinary() ([]byte, error) {
 	return t.serialize(0, false), nil
 }
 
@@ -139,17 +139,17 @@ func (t *Version) UnmarshalBinary(b []byte) error {
 }
 
 // String returns the string representation of t.
-func (t *Version) String() string {
+func (t Version) String() string {
 	return string(t.serialize(3, false))
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (t *Version) MarshalJSON() ([]byte, error) {
+func (t Version) MarshalJSON() ([]byte, error) {
 	return t.serialize(0, true), nil
 }
 
 // MarshalText implements the encoding.TestMarshaler interface.
-func (t *Version) MarshalText() ([]byte, error) {
+func (t Version) MarshalText() ([]byte, error) {
 	return t.serialize(0, false), nil
 }
 

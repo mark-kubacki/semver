@@ -150,7 +150,7 @@ func newRangeByShortcut(str []byte) (Range, error) {
 }
 
 // GetLowerBoundary translates a boundary into a Version.
-func (r *Range) GetLowerBoundary() *Version {
+func (r Range) GetLowerBoundary() *Version {
 	if !r.hasLower {
 		return nil
 	}
@@ -158,7 +158,7 @@ func (r *Range) GetLowerBoundary() *Version {
 }
 
 // GetUpperBoundary translates a boundary into a Version.
-func (r *Range) GetUpperBoundary() *Version {
+func (r Range) GetUpperBoundary() *Version {
 	if !r.hasUpper {
 		return nil
 	}
@@ -166,11 +166,7 @@ func (r *Range) GetUpperBoundary() *Version {
 }
 
 // Contains returns true if a Version is inside this Range.
-func (r *Range) Contains(v *Version) bool {
-	if v == nil {
-		return false
-	}
-
+func (r Range) Contains(v Version) bool {
 	if r.upper == r.lower {
 		return r.lower.LimitedEqual(v)
 	}
@@ -183,7 +179,7 @@ func (r *Range) Contains(v *Version) bool {
 //
 // Use this in the context of pulling in packages because it follows the spirit of §9 SemVer.
 // Also see https://github.com/npm/node-semver/issues/64
-func (r *Range) IsSatisfiedBy(v *Version) bool {
+func (r Range) IsSatisfiedBy(v Version) bool {
 	if !r.Contains(v) {
 		return false
 	}
@@ -199,7 +195,7 @@ func (r *Range) IsSatisfiedBy(v *Version) bool {
 	return true
 }
 
-func (r *Range) satisfiesLowerBound(v *Version) bool {
+func (r Range) satisfiesLowerBound(v Version) bool {
 	if !r.hasLower {
 		return true
 	}
@@ -212,7 +208,7 @@ func (r *Range) satisfiesLowerBound(v *Version) bool {
 	return r.lower.limitedLess(v) && !equal
 }
 
-func (r *Range) satisfiesUpperBound(v *Version) bool {
+func (r Range) satisfiesUpperBound(v Version) bool {
 	if !r.hasUpper {
 		return true
 	}
@@ -226,7 +222,7 @@ func (r *Range) satisfiesUpperBound(v *Version) bool {
 		equal = r.upper.sharesPrefixWith(v)
 	}
 
-	return v.limitedLess(&r.upper) && !equal
+	return v.limitedLess(r.upper) && !equal
 }
 
 // Satisfies is a convenience function for former NodeJS developers
@@ -241,5 +237,5 @@ func Satisfies(aVersion, aRange string) (bool, error) {
 		return false, err
 	}
 
-	return r.IsSatisfiedBy(&v), nil
+	return r.IsSatisfiedBy(v), nil
 }

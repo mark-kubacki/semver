@@ -77,7 +77,7 @@ type Version struct {
 // into a single Version.
 func NewVersion(str []byte) (Version, error) {
 	ver := Version{}
-	err := ver.unmarshalText([]byte(str))
+	err := (&ver).unmarshalText(str)
 	return ver, err
 }
 
@@ -237,8 +237,8 @@ func Compare(a, b Version) int {
 }
 
 // Less is a convenience function for sorting.
-func (t *Version) Less(o *Version) bool {
-	sd := Compare(*t, *o)
+func (t Version) Less(o Version) bool {
+	sd := Compare(t, o)
 	return sd < 0 || (sd == 0 && t.build < o.build)
 }
 
@@ -246,7 +246,7 @@ func (t *Version) Less(o *Version) bool {
 // with a precision limited to version, (pre-)release type and (pre-)release version.
 //
 // Commutative.
-func (t *Version) limitedLess(o *Version) bool {
+func (t Version) limitedLess(o Version) bool {
 	return signDelta(t.version, o.version, idxSpecifierType) < 0
 }
 
@@ -256,7 +256,7 @@ func (t *Version) limitedLess(o *Version) bool {
 //
 // Use this, for example, to tell a beta from a regular version;
 // or to accept a patched version as regular version.
-func (t *Version) LimitedEqual(o *Version) bool {
+func (t Version) LimitedEqual(o Version) bool {
 	if t.version[idxReleaseType] == common && o.version[idxReleaseType] > common {
 		return t.sharesPrefixWith(o)
 	}
@@ -264,7 +264,7 @@ func (t *Version) LimitedEqual(o *Version) bool {
 }
 
 // IsAPreRelease is used to discriminate pre-releases.
-func (t *Version) IsAPreRelease() bool {
+func (t Version) IsAPreRelease() bool {
 	return t.version[idxReleaseType] < common
 }
 
@@ -272,25 +272,25 @@ func (t *Version) IsAPreRelease() bool {
 //
 // A 'prefix' is the major, minor, patch and revision number.
 // For example: 1.2.3.4…
-func (t *Version) sharesPrefixWith(o *Version) bool {
+func (t Version) sharesPrefixWith(o Version) bool {
 	return signDelta(t.version, o.version, idxReleaseType) == 0
 }
 
 // Major returns the major of a version. For instance, for the version "1.2.3",
 // it would return 1.
-func (t *Version) Major() int32 {
+func (t Version) Major() int32 {
 	return t.version[0]
 }
 
 // Minor returns the minor of a version. For instance, for the version "1.2.3",
 // it would return 2.
-func (t *Version) Minor() int32 {
+func (t Version) Minor() int32 {
 	return t.version[1]
 }
 
 // Patch returns the patch of a version. For instance, for the version "1.2.3",
 // it would return 3.
-func (t *Version) Patch() int32 {
+func (t Version) Patch() int32 {
 	return t.version[2]
 }
 
