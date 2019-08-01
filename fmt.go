@@ -168,3 +168,31 @@ func (t *Version) UnmarshalText(b []byte) error {
 	t.build = 0
 	return t.unmarshalText(b)
 }
+
+// Scan implements the sql.Scanner interface.
+func (t *Version) Scan(src interface{}) error {
+	switch v := src.(type) {
+	case int64:
+		if v >= 0 && v <= (1<<31-1) { // v ≤ MaxInt32
+			*t = Version{}
+			t.version[0] = int32(v) // It's a pristine Version, initialized to {0}.
+			return nil
+		}
+		return errOutOfBounds
+	case []byte:
+		*t = Version{}
+		return t.unmarshalText(v)
+	case string:
+		*t = Version{}
+		return t.unmarshalText([]byte(v))
+	}
+
+	return errInvalidType
+}
+
+// Value implements the driver.Valuer interface, as found below database/sql.
+//
+// Use string(Version) instead.
+func (t Version) Value() (interface{}, error) {
+	return t.String(), nil
+}

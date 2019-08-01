@@ -14,6 +14,8 @@ const (
 	errTooManyColumns       InvalidStringValue = "Version consists of too many columns"
 	errVersionStringLength  InvalidStringValue = "Version is too long"
 	errInvalidBuildSuffix   InvalidStringValue = "Version has a '+' but no +buildNNN suffix"
+	errInvalidType          InvalidStringValue = "Cannot read this type into a Version"
+	errOutOfBounds          InvalidStringValue = "The source representation does not fit into a Version"
 )
 
 // alpha = -4, beta = -3, pre = -2, rc = -1, common = 0, revision = 1, patch = 2

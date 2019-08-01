@@ -5,11 +5,17 @@
 package semver
 
 import (
+	"database/sql"
 	"encoding/json"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+var _ sql.Scanner = &Version{}
+var _ string = (Version{}).String()
+
+// var _ driver.Valuer = Version{}
 
 func TestSerialization(t *testing.T) {
 	Convey("Versions within JSON…", t, FailureContinues, func() {
