@@ -1,4 +1,4 @@
-// +build 3rdparty
+// +build ignore
 
 package semver
 

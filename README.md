@@ -9,9 +9,10 @@ A library for parsing and processing of *Versions* and *Ranges* in:
   * used by npmjs.org, pypi.org…
 * Gentoo's ebuild format
 
-Does not rely on *regular expressions* and does not use package *reflection*.
+Does not rely on *regular expressions* neither does it use package *reflection*.
 
 ```bash
+$ sed -i -e 's@ignore@3rdparty@g' *_test.go
 $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
 BenchmarkHashicorpNewVersion-24          1000000  1805 ns/op   544 B/op   5 allocs/op
