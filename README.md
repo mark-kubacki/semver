@@ -33,17 +33,22 @@ Licensed under a [BSD-style license](LICENSE).
 
 Usage
 -----
-```bash
-$ go get -v -d github.com/wmark/semver
 
-or, better yet,
-
-$ dep ensure --add github.com/wmark/semver@^2
-```
+Using _go modules_ you'd just:
 
 ```go
-import "github.com/wmark/semver"
+import "blitznote.com/src/semver/v3"
+```
 
+… or, with older versions of _Go_ leave out the version suffix `/v…` and:
+
+```bash
+$ dep ensure --add blitznote.com/src/semver@^3
+```
+
+After which you can use the module as usual, like this:
+
+```go
 v1, err := semver.NewVersion([]byte("1.2.3-beta"))
 v2, err := semver.NewVersion([]byte("2.0.0-alpha20140805.456-rc3+build1800"))
 v1.Less(v2) // true
@@ -53,7 +58,7 @@ r1.Contains(v1)      // true
 r1.IsSatisfiedBy(v1) // false (rejects pre-releases: alphas, betas…)
 ```
 
-Also check the [GoDocs](http://godoc.org/github.com/wmark/semver)
+Also check the [GoDocs](https://godoc.org/blitznote.com/src/semver)
 and [Gentoo Linux Ebuild File Format](http://devmanual.gentoo.org/ebuild-writing/file-format/),
 [Gentoo's notation of dependencies](http://devmanual.gentoo.org/general-concepts/dependencies/).
 

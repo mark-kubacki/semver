@@ -1,1 +1,1 @@
-module blitznote.com/src/semver/v2
+module blitznote.com/src/semver/v3
