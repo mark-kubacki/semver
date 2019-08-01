@@ -75,6 +75,17 @@ type Version struct {
 	build   int32
 }
 
+// MustParse is NewVersion on strings, and panics on errors.
+//
+// This is a convenience function for a cloud plattform provider.
+func MustParse(str string) Version {
+	ver, err := NewVersion([]byte(str))
+	if err != nil {
+		panic(err.Error())
+	}
+	return ver
+}
+
 // NewVersion translates the given string, which must be free of whitespace,
 // into a single Version.
 func NewVersion(str []byte) (Version, error) {
