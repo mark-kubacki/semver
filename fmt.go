@@ -124,11 +124,17 @@ func (t Version) serialize(minPlaces int, quoted bool) []byte {
 }
 
 // Bytes returns a slice with the minimal human-readable representation of this Version.
+//
+// Unlike String(), which returns a minimum of columns,
+// this will conserve space at the expense of legibility.
+// In other words, `len(v.Bytes()) ≤ len(v.String())`.
 func (t Version) Bytes() []byte {
 	return t.serialize(0, false)
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
+//
+// Anecdotically, encoders for binary protocols use this.
 func (t Version) MarshalBinary() ([]byte, error) {
 	return t.serialize(0, false), nil
 }
@@ -139,6 +145,8 @@ func (t *Version) UnmarshalBinary(b []byte) error {
 }
 
 // String returns the string representation of t.
+//
+// Anecdotically, fmt.Println will use this.
 func (t Version) String() string {
 	return string(t.serialize(3, false))
 }
@@ -148,7 +156,9 @@ func (t Version) MarshalJSON() ([]byte, error) {
 	return t.serialize(0, true), nil
 }
 
-// MarshalText implements the encoding.TestMarshaler interface.
+// MarshalText implements the encoding.TextMarshaler interface.
+//
+// Anecdotically, anything that writes XML will use this.
 func (t Version) MarshalText() ([]byte, error) {
 	return t.serialize(0, false), nil
 }

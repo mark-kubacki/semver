@@ -49,13 +49,13 @@ $ dep ensure --add blitznote.com/src/semver@^3
 After which you can use the module as usual, like this:
 
 ```go
-v1, err := semver.NewVersion([]byte("1.2.3-beta"))
-v2, err := semver.NewVersion([]byte("2.0.0-alpha20140805.456-rc3+build1800"))
+v1 := semver.MustParse("1.2.3-beta")
+v2 := semver.MustParse("2.0.0-alpha20140805.456-rc3+build1800")
 v1.Less(v2) // true
 
-r1, err := NewRange("~1.2")
+r1, _ := NewRange("~1.2")
 r1.Contains(v1)      // true
-r1.IsSatisfiedBy(v1) // false (rejects pre-releases: alphas, betas…)
+r1.IsSatisfiedBy(v1) // false (pre-releases don't satisfy)
 ```
 
 Also check the [GoDocs](https://godoc.org/blitznote.com/src/semver)

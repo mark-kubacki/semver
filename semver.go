@@ -57,7 +57,7 @@ var releaseValue = map[string]int{
 
 var buildsuffix = []byte("+build")
 
-// InvalidStringValue is returned as error when translating a string into type fail.
+// InvalidStringValue instances are returned as error on any conversion failures.
 type InvalidStringValue string
 
 // Error implements the error interface.
@@ -77,6 +77,8 @@ type Version struct {
 
 // MustParse is NewVersion on strings, and panics on errors.
 //
+// Use this in tests or with constants, e. g. whenever you control the input.
+//
 // This is a convenience function for a cloud plattform provider.
 func MustParse(str string) Version {
 	ver, err := NewVersion([]byte(str))
@@ -88,6 +90,9 @@ func MustParse(str string) Version {
 
 // NewVersion translates the given string, which must be free of whitespace,
 // into a single Version.
+//
+// As by convention, an io.Reader will give you []byte,
+// this (and most functions internally) accordingly works on []byte.
 func NewVersion(str []byte) (Version, error) {
 	ver := Version{}
 	err := (&ver).unmarshalText(str)
@@ -262,12 +267,14 @@ func (t Version) limitedLess(o Version) bool {
 	return signDelta(t.version, o.version, idxSpecifierType) < 0
 }
 
-// LimitedEqual returns true of two versions share the same prefix,
+// LimitedEqual returns true if two versions share the same: prefix,
 // which is the "actual version", (pre-)release type, and (pre-)release version.
 // The exception are patch-levels, which are always equal.
 //
 // Use this, for example, to tell a beta from a regular version;
 // or to accept a patched version as regular version.
+//
+// A thing confusing but convention is to read this from right to left.
 func (t Version) LimitedEqual(o Version) bool {
 	if t.version[idxReleaseType] == common && o.version[idxReleaseType] > common {
 		return t.sharesPrefixWith(o)

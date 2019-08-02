@@ -5,7 +5,6 @@
 package semver
 
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -83,7 +82,7 @@ func shouldNotContain(aRange interface{}, aVersion ...interface{}) string {
 func TestRangeConstruction(t *testing.T) {
 
 	Convey("version 1.2.3 should be part of…", t, func() {
-		ver, _ := NewVersion([]byte("1.2.3"))
+		ver := MustParse("1.2.3")
 
 		Convey("specific Range 1.2.3", func() {
 			verRange, err := NewRange([]byte("1.2.3"))
@@ -95,11 +94,11 @@ func TestRangeConstruction(t *testing.T) {
 		})
 	})
 
-	v100, _ := NewVersion([]byte("1.0.0"))
-	v120, _ := NewVersion([]byte("1.2.0"))
-	v123, _ := NewVersion([]byte("1.2.3"))
-	v130, _ := NewVersion([]byte("1.3.0"))
-	v200, _ := NewVersion([]byte("2.0.0"))
+	v100 := MustParse("1.0.0")
+	v120 := MustParse("1.2.0")
+	v123 := MustParse("1.2.3")
+	v130 := MustParse("1.3.0")
+	v200 := MustParse("2.0.0")
 
 	Convey("Range >=1.2.3 <=1.3.0…", t, func() {
 		verRange, err := NewRange([]byte(">=1.2.3 <=1.3.0"))
@@ -339,8 +338,8 @@ func TestRangeConstruction(t *testing.T) {
 		if err != nil {
 			return
 		}
-		v013, _ := NewVersion([]byte("0.1.3"))
-		v020, _ := NewVersion([]byte("0.2.0"))
+		v013 := MustParse("0.1.3")
+		v020 := MustParse("0.2.0")
 
 		Convey("have lower bound >=0.1.3", func() {
 			So(r1, hasLowerBound, v013)
@@ -622,45 +621,11 @@ func TestSatisfies(t *testing.T) {
 	})
 
 	Convey("Test the examples found in README file.", t, func() {
-		v, _ := NewVersion([]byte("1.2.3-beta"))
+		v := MustParse("1.2.3-beta")
 		r, _ := NewRange([]byte("~1.2"))
 		So(r.Contains(v), ShouldBeTrue)
 		So(r.IsSatisfiedBy(v), ShouldBeFalse)
 	})
-}
-
-func Example_range() {
-	var (
-		r, _      = NewRange([]byte("1.2 - 2.0"))
-		beyond, _ = NewVersion([]byte("1.0"))
-		lower, _  = NewVersion([]byte("1.2"))
-		upper, _  = NewVersion([]byte("2.0"))
-	)
-
-	fmt.Println(Compare(*r.GetLowerBoundary(), beyond))
-	fmt.Println(Compare(*r.GetLowerBoundary(), lower))
-	fmt.Println(Compare(*r.GetLowerBoundary(), upper))
-	fmt.Println(Compare(*r.GetUpperBoundary(), upper))
-	// Output:
-	// 1
-	// 0
-	// -1
-	// 0
-}
-
-func Example_full() {
-	v1, _ := NewVersion([]byte("1.2.3-beta"))
-	v2, _ := NewVersion([]byte("2.0.0-alpha20140805.456-rc3+build1800"))
-	fmt.Println(v1.Less(v2))
-
-	r1, _ := NewRange([]byte("~1.2"))
-	fmt.Println(r1.Contains(v1))
-	fmt.Println(r1.IsSatisfiedBy(v1)) // rejects pre-releases: alphas, betas…
-
-	// Output:
-	// true
-	// true
-	// false
 }
 
 var benchR, benchRErr = NewRange([]byte(">=1.2.3 <=1.3.0"))

@@ -149,7 +149,7 @@ func newRangeByShortcut(str []byte) (Range, error) {
 	return r, nil
 }
 
-// GetLowerBoundary translates a boundary into a Version.
+// GetLowerBoundary gets you the lower (left) boundary.
 func (r Range) GetLowerBoundary() *Version {
 	if !r.hasLower {
 		return nil
@@ -157,7 +157,7 @@ func (r Range) GetLowerBoundary() *Version {
 	return &r.lower
 }
 
-// GetUpperBoundary translates a boundary into a Version.
+// GetUpperBoundary gets you the high (right) boundary.
 func (r Range) GetUpperBoundary() *Version {
 	if !r.hasUpper {
 		return nil
@@ -166,6 +166,8 @@ func (r Range) GetUpperBoundary() *Version {
 }
 
 // Contains returns true if a Version is inside this Range.
+//
+// If in doubt use IsSatisfiedBy.
 func (r Range) Contains(v Version) bool {
 	if r.upper == r.lower {
 		return r.lower.LimitedEqual(v)
@@ -225,8 +227,10 @@ func (r Range) satisfiesUpperBound(v Version) bool {
 	return v.limitedLess(r.upper) && !equal
 }
 
-// Satisfies is a convenience function for former NodeJS developers
-// which works on two strings.
+// Satisfies is a convenience function for former NodeJS developers,
+// and works on two strings.
+//
+// Please see Range's IsSatisfiedBy for details.
 func Satisfies(aVersion, aRange string) (bool, error) {
 	v, err := NewVersion([]byte(aVersion))
 	if err != nil {
