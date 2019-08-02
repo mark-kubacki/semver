@@ -133,7 +133,7 @@ func newRangeByShortcut(str []byte) (Range, error) {
 		return NewRange(t)
 	}
 
-	r := Range{lower: num, hasLower: true, equalsLower: true, upper: Version{}}
+	r := Range{lower: num, hasLower: true, equalsLower: true, hasUpper: true, upper: Version{}}
 
 	switch {
 	case bytes.HasPrefix(t, []byte("0.")):
