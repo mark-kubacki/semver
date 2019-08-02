@@ -1,0 +1,5 @@
+.cloudignore
+.git*
+#!include:.gitignore
+
+go.sum

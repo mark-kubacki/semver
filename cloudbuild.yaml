@@ -49,7 +49,7 @@ steps:
   volumes:
   - name: 'third-party-sources'
     path: '/var/go/theirs'
-  env: ['GOPATH=/var/go/theirs:/go:/usr/share/gocode', 'GO111MODULE=on']
+  env: ['GOPATH=/var/go/theirs:/go:/usr/share/gocode', 'GO111MODULE=on', 'GOPROXY=off']
   id: 'get_dependencies'
   waitFor: ['get cache']
   args: ['mod', 'vendor']
