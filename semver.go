@@ -288,22 +288,19 @@ func (t Version) sharesPrefixWith(o Version) bool {
 	return signDelta(t.version, o.version, idxReleaseType) == 0
 }
 
-// Major returns the major of a version. For instance, for the version "1.2.3",
-// it would return 1.
-func (t Version) Major() int32 {
-	return t.version[0]
+// Major returns the major of a version.
+func (t Version) Major() int {
+	return int(t.version[0])
 }
 
-// Minor returns the minor of a version. For instance, for the version "1.2.3",
-// it would return 2.
-func (t Version) Minor() int32 {
-	return t.version[1]
+// Minor returns the minor of a version.
+func (t Version) Minor() int {
+	return int(t.version[1])
 }
 
-// Patch returns the patch of a version. For instance, for the version "1.2.3",
-// it would return 3.
-func (t Version) Patch() int32 {
-	return t.version[2]
+// Patch returns the patch of a version.
+func (t Version) Patch() int {
+	return int(t.version[2])
 }
 
 // NextVersions returns a list of possible next versions after t. For each of
