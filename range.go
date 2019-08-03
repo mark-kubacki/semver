@@ -34,36 +34,30 @@ func NewRange(str []byte) (Range, error) {
 		return newRangeByShortcut(str)
 	}
 
-	var leftEnd, rightStart, leftDotCount int
 	var upperBound, lowerBound bool = true, true
-	for i, r := range str {
-		if r == '.' {
-			leftDotCount++
-		}
-		if r == ' ' || r == ',' {
-			if leftEnd == 0 {
-				leftEnd = i
-			}
-			rightStart = i
-			continue
-		} else {
-			if rightStart != 0 {
-				rightStart++
-				if r != '-' {
-					break
-				}
-			}
-		}
-		switch r {
-		case '<':
-			lowerBound = false
-		case '>':
-			upperBound = false
+	if len(str) >= 2 {
+		lowerBound = !(str[0] == '<' || str[1] == '<')
+		upperBound = !(str[0] == '>' || str[1] == '>')
+	}
+	var leftEnd, rightStart int
+	if idx := bytes.IndexByte(str, byte(' ')); idx > 1 {
+		leftEnd = idx
+	} else if idx = bytes.IndexByte(str, byte(',')); idx > 1 {
+		leftEnd = idx
+	} else {
+		leftEnd = len(str)
+		rightStart = leftEnd
+	}
+	if rightStart == 0 {
+		rightStart = bytes.LastIndexByte(str, byte(' ')) + 1
+		if rightStart <= 0 {
+			rightStart = bytes.LastIndexByte(str, byte(',')) + 1
 		}
 	}
 
 	isNaturalRange = isNaturalRange && leftEnd != rightStart && (len(str)-rightStart) > 0
 	if !isNaturalRange {
+		leftDotCount := bytes.Count(str[:leftEnd], []byte{'.'})
 		switch leftDotCount {
 		case 1:
 			return newRangeByShortcut(append([]byte{'~'}, str...))
@@ -73,17 +67,14 @@ func NewRange(str []byte) (Range, error) {
 	}
 	vr := Range{}
 	if leftEnd == rightStart {
-		err := vr.setBound([]byte(str), lowerBound, upperBound)
+		err := vr.setBound(str, lowerBound, upperBound)
 		return vr, err
 	}
 
-	if leftEnd == 0 {
-		leftEnd = len(str)
-	}
-	if err := vr.setBound([]byte(str[:leftEnd]), true, false); err != nil {
+	if err := vr.setBound(str[:leftEnd], true, false); err != nil {
 		return vr, err
 	}
-	if err := vr.setBound([]byte(str[rightStart:]), false, true); err != nil {
+	if err := vr.setBound(str[rightStart:], false, true); err != nil {
 		return vr, err
 	}
 

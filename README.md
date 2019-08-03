@@ -21,7 +21,7 @@ BenchmarkSemverNewVersion-24            30000000    48.5 ns/op   0 B/op   0 allo
 
 BenchmarkHashicorpNewConstraint-24        200000  6350 ns/op  2096 B/op  18 allocs/op
 BenchmarkBlangParseRange-24              1000000  1440 ns/op   480 B/op  13 allocs/op
-BenchmarkSemverNewRange-24              10000000   133 ns/op     0 B/op   0 allocs/op ←
+BenchmarkSemverNewRange-24              10000000   120 ns/op     0 B/op   0 allocs/op ←
 
 BenchmarkHashicorpCompare-24             1000000  1005 ns/op   395 B/op  12 allocs/op
 BenchmarkBlangCompare-24               100000000    20.2 ns/op   0 B/op   0 allocs/op
