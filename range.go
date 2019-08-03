@@ -100,25 +100,21 @@ func (r *Range) setBound(str []byte, isLower, isUpper bool) error {
 	return errInvalidVersionString
 
 startFound:
-	num := Version{}
-	err := num.unmarshalText(str[versionStartIdx:])
-	if err != nil {
-		return err
-	}
-
+	var err error
 	equalOk := versionStartIdx == 0 || bytes.IndexByte(str[:versionStartIdx], '=') > 0
 	if isUpper {
-		r.equalsUpper = equalOk
-		r.upper = num
-		r.hasUpper = true
+		r.equalsUpper, r.hasUpper = equalOk, true
+		err = r.upper.unmarshalText(str[versionStartIdx:])
 	}
 	if isLower {
-		r.equalsLower = equalOk
-		r.lower = num
-		r.hasLower = true
+		r.equalsLower, r.hasLower = equalOk, true
+		if isUpper {
+			r.lower = r.upper
+		} else {
+			err = r.lower.unmarshalText(str[versionStartIdx:])
+		}
 	}
-
-	return nil
+	return err
 }
 
 // newRangeByShortcut covers the special case of Ranges whose boundaries
