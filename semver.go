@@ -253,12 +253,6 @@ func Compare(a, b Version) int {
 	return 0
 }
 
-// Less is a convenience function for sorting.
-func (t Version) Less(o Version) bool {
-	sd := Compare(t, o)
-	return sd < 0 || (sd == 0 && t.build < o.build)
-}
-
 // limitedLess compares two Versions
 // with a precision limited to version, (pre-)release type and (pre-)release version.
 //

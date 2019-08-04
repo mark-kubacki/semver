@@ -5,6 +5,7 @@
 package semver
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -522,6 +523,32 @@ func BenchmarkSemverCompare(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		r = Compare(benchV, v)
+	}
+	compareResult = r
+}
+
+var benchResult bool
+
+const benchCompareIdx = 10
+
+func BenchmarkVersion_Less(b *testing.B) {
+	t := Version{}
+	o := Version{}
+	o.version[benchCompareIdx] = benchCompareIdx
+	r := t.Less(o)
+
+	for n := 0; n < b.N; n++ {
+		r = t.Less(o)
+	}
+	benchResult = r
+}
+
+func BenchmarkBytesCompare(b *testing.B) {
+	var k, m [14]byte
+	r := bytes.Compare(k[:], m[:])
+
+	for n := 0; n < b.N; n++ {
+		r = bytes.Compare(k[:], m[:])
 	}
 	compareResult = r
 }
