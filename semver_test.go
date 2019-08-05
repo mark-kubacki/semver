@@ -132,6 +132,16 @@ func TestVersion(t *testing.T) {
 			v1 := MustParse("1.3.8")
 			v2 := MustParse("1.3.8")
 			So(v1, ShouldResemble, v2)
+			So(v1.Less(v2), ShouldBeFalse)
+			So(v2.Less(v1), ShouldBeFalse)
+			So(Compare(v1, v2), ShouldEqual, 0)
+		})
+
+		Convey("compare", func() {
+			v1 := MustParse("2.2.1")
+			v2 := MustParse("2.4.0-beta")
+			So(Compare(v1, v2), ShouldEqual, -1)
+			So(Compare(v2, v1), ShouldEqual, 1)
 		})
 
 		Convey("between different release types", func() {

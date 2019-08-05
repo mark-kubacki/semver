@@ -235,24 +235,6 @@ func signDelta(a, b [14]int32, cutoffIdx int) int8 {
 	return 0
 }
 
-// Compare computes the difference between two Versions and returns its signum.
-//
-//   1  if a > b
-//   0  if a == b
-//   -1 if a < b
-//
-// The 'build' is not compared.
-func Compare(a, b Version) int {
-	for i := 0; i < len(a.version); i++ {
-		if a.version[i] == b.version[i] {
-			continue
-		}
-		x := a.version[i] - b.version[i]
-		return int((x >> 31) - (-x >> 31))
-	}
-	return 0
-}
-
 // limitedLess compares two Versions
 // with a precision limited to version, (pre-)release type and (pre-)release version.
 //

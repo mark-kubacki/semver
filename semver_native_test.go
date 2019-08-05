@@ -10,6 +10,16 @@ import (
 	"testing"
 )
 
+func BenchmarkCompare_asm(b *testing.B) {
+	v, _ := NewVersion(verForBenchmarks)
+	r := Compare(benchV, v)
+
+	for n := 0; n < b.N; n++ {
+		r = compare(&benchV.version, &v.version)
+	}
+	compareResult = r
+}
+
 func BenchmarkLess_asm(b *testing.B) {
 	t := Version{}
 	o := Version{}
