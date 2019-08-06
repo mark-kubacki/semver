@@ -61,53 +61,34 @@ diff:
 	RET
 
 TEXT ·less(SB),NOSPLIT,$0-17
-	MOVQ	t+0(FP), DI // Flip SI and DI because we use "greater than".
-	MOVQ	o+8(FP), SI
+	MOVQ	t+0(FP), SI
+	MOVQ	o+8(FP), DI
 
-	MOVOU	(SI), X2
-	MOVOU	(DI), X5
-	// PCMPGTD X5, X2
-	BYTE $0x66; BYTE $0x0f; BYTE $0x66; BYTE $0xd5
-	PMOVMSKB X2, AX
-	// TEST	AX, AX
-	BYTE $0x85; BYTE $0xc0
-	JNE	is_less
+	XORQ	DX, DX
+less_loop:
+	MOVOU	(DI)(DX*1), X4
+	MOVOU	(SI)(DX*1), X5
+	PSHUFL	$27, X4, X1	// $27 is [0, 1, 2, 3], reverse order of elements to get a workable mask below.
+	PSHUFL	$27, X5, X0
+	MOVAPS	X1, X3
+	PCMPGTL	X0, X3		// 3.0.1.0 |>| 2.1.0.0 -> 1.0.1.0
+	PCMPGTL	X1, X0		// 2.1.0.0 |<| 3.0.1.0 -> 0.1.0.0
+	MOVMSKPS X3, BX		// 1010
+	MOVMSKPS X0, AX		// 0100
+	// !(AX == 0 && BX == 0)
+	MOVQ	BX, R8
+	ORQ	AX, R8		// R8 will be 0 if both masks are 0
+	JNE	less_determine	// yes, one is not 0
+	// no, both masks are 0
+	ADDQ	$16, DX
+	CMPQ	DX, $64
+	JE	less_eol
+	JMP	less_loop
 
-	MOVOU	16(SI), X3
-	MOVOU	16(DI), X6
-	// PCMPGTD X6, X3
-	BYTE $0x66; BYTE $0x0f; BYTE $0x66; BYTE $0xde
-	PMOVMSKB X3, AX
-	// TEST	AX, AX
-	BYTE $0x85; BYTE $0xc0
-	JNE	is_less
-
-	MOVOU	32(SI), X4
-	MOVOU	32(DI), X7
-	// PCMPGTD X7, X4
-	BYTE $0x66; BYTE $0x0f; BYTE $0x66; BYTE $0xe7
-	PMOVMSKB X4, AX
-	// TEST	AX, AX
-	BYTE $0x85; BYTE $0xc0
-	JNE	is_less
-
-	MOVOU	48(SI), X0
-	MOVOU	48(DI), X1
-	// PCMPGTD X1, X0
-	BYTE $0x66; BYTE $0x0f; BYTE $0x66; BYTE $0xc1
-	PMOVMSKB X0, AX
-// Now comes an exception: We over-read to catch the adjacent 'build'; which lives in t[len-1]+1
-// because Go allocates and aligns everything on lines of 8 byte.
-// Good thing is we need to compare that anyway, but have to filter out the unclaimed space.
-// TEST is bitwise-and anyway, so run with 0x0fff.
-	// TEST	0x0fff, AX
-	BYTE $0xa9; BYTE $0xff; BYTE $0x0f; BYTE $0x00; BYTE $0x00
-	JNE	is_less
-
-not_less:
-	MOVB	$0, ret+16(FP)
-	RET
-
-is_less:
-	MOVB	$1, ret+16(FP)
+less_determine:
+	XORQ	R8, R8
+	CMPQ	BX, AX
+	SETGT	R8
+less_eol:
+	MOVB	R8, ret+16(FP)
 	RET
