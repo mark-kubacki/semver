@@ -73,6 +73,7 @@ type Version struct {
 	// 0–3: version, 4: releaseType, 5–8: releaseVer, 9: releaseSpecifier, 10–: specifier
 	version [14]int32
 	build   int32
+	_       int32
 }
 
 // MustParse is NewVersion on strings, and panics on errors.
