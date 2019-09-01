@@ -72,7 +72,7 @@ less_loop:
 	PSHUFL	$27, X5, X0
 	MOVAPS	X1, X3
 	PCMPGTL	X0, X3		// 3.0.1.0 |>| 2.1.0.0 -> 1.0.1.0
-	PCMPGTL	X1, X0		// 2.1.0.0 |<| 3.0.1.0 -> 0.1.0.0
+	PCMPGTL	X1, X0		// 2.1.0.0 |>| 3.0.1.0 -> 0.1.0.0
 	MOVMSKPS X3, BX		// 1010
 	MOVMSKPS X0, AX		// 0100
 	// !(AX == 0 && BX == 0)
