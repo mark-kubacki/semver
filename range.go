@@ -12,9 +12,9 @@ import (
 // For example, "1.2–2.0" is such a Range, with two boundaries.
 type Range struct {
 	lower       Version
+	upper       Version
 	hasLower    bool
 	equalsLower bool
-	upper       Version
 	hasUpper    bool
 	equalsUpper bool
 }
