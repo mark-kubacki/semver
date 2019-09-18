@@ -5,3 +5,5 @@
 
 AUTHORS      text eol=auto whitespace=trailing-space
 CONTRIBUTORS text eol=auto whitespace=trailing-space
+
+testdata/*.list -diff

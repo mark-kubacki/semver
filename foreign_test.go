@@ -13,8 +13,10 @@ var benchHashicorpV, benchHashicorpErr = hashicorp.NewVersion(strForBenchmarks)
 
 func BenchmarkHashicorpNewVersion(b *testing.B) {
 	var v, e = hashicorp.NewVersion(strForBenchmarks)
+	lim := len(VersionsFromGentoo)
+
 	for n := 0; n < b.N; n++ {
-		v, e = hashicorp.NewVersion(strForBenchmarks)
+		v, e = hashicorp.NewVersion(string(VersionsFromGentoo[n%lim]))
 	}
 	benchHashicorpV, benchHashicorpErr = v, e
 }
@@ -44,8 +46,10 @@ var benchBlangV, benchBlangErr = blang.Make(strForBenchmarks)
 
 func BenchmarkBlangMake(b *testing.B) {
 	var v, e = blang.Make(strForBenchmarks)
+	lim := len(VersionsFromGentoo)
+
 	for n := 0; n < b.N; n++ {
-		v, e = blang.Make(strForBenchmarks)
+		v, e = blang.Make(string(VersionsFromGentoo[n%lim]))
 	}
 	benchBlangV, benchBlangErr = v, e
 }

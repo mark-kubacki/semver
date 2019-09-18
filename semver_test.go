@@ -5,8 +5,10 @@
 package semver
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -512,6 +514,31 @@ func TestVersionAccessors(t *testing.T) {
 	})
 }
 
+// VersionsFromGentoo is a set of about 36000 versions read from canned file
+// and stored in the way that required the least conversions.
+//
+// The order is as read, not sorted.
+//
+// Because this resembles a “real world” sample, use this for benchmarks.
+var VersionsFromGentoo = func() [][]byte {
+	lst := make([][]byte, 0, 36300) // <testdata/gentoo-portage-PV.list wc -l
+	if file, err := os.Open("testdata/gentoo-portage-PV.list"); err == nil {
+		defer file.Close()
+
+		for splitter := bufio.NewScanner(file); splitter.Scan(); {
+			line := splitter.Text()
+			if len(line) > 0 {
+				lst = append(lst, []byte(line))
+			}
+		}
+	}
+
+	if len(lst) < 36000 {
+		panic("testdata/*.list has been split into insufficient elements")
+	}
+	return lst
+}()
+
 var strForBenchmarks = "1.2.3-beta4.5.6"
 var verForBenchmarks = []byte(strForBenchmarks)
 var benchV, benchErr = NewVersion(append(verForBenchmarks, '5'))
@@ -521,6 +548,16 @@ func BenchmarkSemverNewVersion(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		v, e = NewVersion(verForBenchmarks)
+	}
+	benchV, benchErr = v, e
+}
+
+func Benchmark_NewVersion(b *testing.B) {
+	v, e := NewVersion(verForBenchmarks)
+	lim := len(VersionsFromGentoo)
+
+	for n := 0; n < b.N; n++ {
+		v, e = NewVersion(VersionsFromGentoo[n%lim])
 	}
 	benchV, benchErr = v, e
 }
