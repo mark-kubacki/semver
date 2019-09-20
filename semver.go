@@ -299,7 +299,7 @@ func (t Version) Patch() int {
 //   common: 0
 //
 // Thus, if you don't want any pre-release options, set minReleaseType to 0.
-func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version {
+func (t Version) NextVersions(minReleaseType int, numberedPre bool) []*Version {
 	var next []*Version
 
 	if minReleaseType < alpha || minReleaseType > common {
@@ -313,11 +313,11 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 			if !numberedPre {
 				continue
 			}
-			ver := *t
+			ver := t
 			ver.version[idxRelease]++
 			next = append(next, &ver)
 		} else {
-			ver := *t
+			ver := t
 			ver.version[idxReleaseType] = releaseType
 			if numberedPre {
 				ver.version[idxRelease] = 1
@@ -328,7 +328,7 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 		}
 	}
 	if t.version[idxReleaseType] < common {
-		ver := *t
+		ver := t
 		ver.version[idxReleaseType] = common
 		ver.version[idxRelease] = 0
 		next = append(next, &ver)
@@ -338,14 +338,14 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 	// suggest patch or revision if not one of those already
 	if t.version[idxReleaseType] == common ||
 		t.version[idxReleaseType] == patch {
-		ver := *t
+		ver := t
 		ver.version[idxReleaseType] = revision
 		ver.version[idxRelease] = 1
 		next = append(next, &ver)
 	}
 	if t.version[idxReleaseType] == common ||
 		t.version[idxReleaseType] == revision {
-		ver := *t
+		ver := t
 		ver.version[idxReleaseType] = patch
 		ver.version[idxRelease] = 1
 		next = append(next, &ver)
@@ -354,7 +354,7 @@ func (t *Version) NextVersions(minReleaseType int, numberedPre bool) []*Version 
 	for i := idxReleaseType - 2; 0 <= i; i-- {
 		// for each version point, iterate the release types within desired bounds
 		for releaseType := int32(minReleaseType); releaseType <= common; releaseType++ {
-			ver := *t
+			ver := t
 			ver.version[i]++
 			for j := i + 1; j < len(ver.version); j++ {
 				ver.version[j] = 0 // when incrementing, reset next points to 0

@@ -328,8 +328,7 @@ func TestNextVersions(t *testing.T) {
 
 		ver := "1.0.0"
 		Convey(ver, func() {
-			ver, err := NewVersion([]byte(ver))
-			So(err, ShouldBeNil)
+			ver := MustParse(ver)
 
 			Convey("Without pre-releases", func() {
 				next := toStr(ver.NextVersions(0, false))
@@ -394,8 +393,7 @@ func TestNextVersions(t *testing.T) {
 
 		ver = "1.2.3"
 		Convey(ver, func() {
-			ver, err := NewVersion([]byte(ver))
-			So(err, ShouldBeNil)
+			ver := MustParse(ver)
 
 			Convey("Without pre-releases", func() {
 				next := toStr(ver.NextVersions(0, false))
@@ -445,8 +443,7 @@ func TestNextVersions(t *testing.T) {
 
 		ver = "1.2.0-beta2"
 		Convey(ver, func() {
-			ver, err := NewVersion([]byte(ver))
-			So(err, ShouldBeNil)
+			ver := MustParse(ver)
 
 			Convey("With all pre-releases and numbers", func() {
 				next := toStr(ver.NextVersions(-4, true))
