@@ -376,3 +376,20 @@ func (t Version) NextVersions(minReleaseType int, numberedPre bool) []*Version {
 
 	return next
 }
+
+type VersionPtrs []*Version
+
+// GetLessFunc gets the 'less' function needed for sort.Slice.
+//
+// To enable trimming an underpopulated slice, 'nil' get to the tail.
+func (p VersionPtrs) GetLessFunc() func(i, j int) bool {
+	var a []*Version = p
+	return func(i, j int) bool {
+		if a[i] == nil {
+			return false
+		} else if a[j] == nil {
+			return true
+		}
+		return a[i].Less(*a[j])
+	}
+}
