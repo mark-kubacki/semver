@@ -30,3 +30,13 @@ func less(t, o *[14]int32) bool
 func (t Version) Less(o Version) bool {
 	return less(&t.version, &o.version)
 }
+
+// Less implements the sort.Interface.
+func (p VersionPtrs) Less(i, j int) bool {
+	if p[i] == nil {
+		return false
+	} else if p[j] == nil {
+		return true
+	}
+	return less(&p[i].version, &p[j].version)
+}

@@ -37,3 +37,13 @@ func (t Version) Less(o Version) bool {
 	}
 	return t.build < o.build
 }
+
+// Less implements the sort.Interface.
+func (p VersionPtrs) Less(i, j int) bool {
+	if p[i] == nil {
+		return false
+	} else if p[j] == nil {
+		return true
+	}
+	return p[i].Less(*p[j])
+}
