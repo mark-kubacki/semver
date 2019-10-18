@@ -65,29 +65,30 @@ TEXT ·less(SB),NOSPLIT,$0-17
 	MOVQ	o+8(FP), DI
 
 	XORQ	DX, DX
+	XORQ	R8, R8
 less_loop:
-	MOVOU	(DI)(DX*1), X4
-	MOVOU	(SI)(DX*1), X5
-	PSHUFL	$27, X4, X1	// $27 is [0, 1, 2, 3], reverse order of elements to get a workable mask below.
-	PSHUFL	$27, X5, X0
+	MOVOU	(DI)(DX*1), X1
+	MOVOU	(SI)(DX*1), X0
+
 	MOVAPS	X1, X3
-	PCMPGTL	X0, X3		// 3.0.1.0 |>| 2.1.0.0 -> 1.0.1.0
-	PCMPGTL	X1, X0		// 2.1.0.0 |>| 3.0.1.0 -> 0.1.0.0
-	MOVMSKPS X3, BX		// 1010
-	MOVMSKPS X0, AX		// 0100
-	// !(AX == 0 && BX == 0)
-	MOVQ	BX, R8
-	ORQ	AX, R8		// R8 will be 0 if both masks are 0
-	JNE	less_determine	// yes, one is not 0
-	// no, both masks are 0
-	ADDQ	$16, DX
-	CMPQ	DX, $64
+	PCMPEQL X0, X1
+	MOVMSKPS	X1, AX
+	CMPB	AX, $0x0f
+	JNE less_determine
+	ADDB	$16, DX
+	CMPB	DX, $64
 	JE	less_eol
 	JMP	less_loop
 
 less_determine:
-	XORQ	R8, R8
-	CMPQ	BX, AX
+	MOVAPS	X3, X1
+	PCMPGTL	X0, X3		// 3.0.1.0 |>| 2.1.0.0 -> 1.0.1.0
+	PCMPGTL	X1, X0		// 2.1.0.0 |>| 3.0.1.0 -> 0.1.0.0
+	PSHUFL	$27, X3, X3	// $27 is [0, 1, 2, 3], reverse order of elements to get a workable mask below.
+	PSHUFL	$27, X0, X0
+	MOVMSKPS X3, BX		// 1010
+	MOVMSKPS X0, AX		// 0100
+	CMPB	BX, AX
 	SETGT	R8
 less_eol:
 	MOVB	R8, ret+16(FP)

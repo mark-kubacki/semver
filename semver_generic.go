@@ -30,10 +30,7 @@ func (t Version) Less(o Version) bool {
 		if t.version[i] == o.version[i] {
 			continue
 		}
-		if t.version[i] < o.version[i] {
-			return true
-		}
-		return false
+		return t.version[i] < o.version[i]
 	}
 	return t.build < o.build
 }
