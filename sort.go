@@ -71,38 +71,6 @@ func (p VersionPtrs) Sort() {
 	versionPointerBuffer.Put(buf)
 }
 
-// magnitudeAwareKey is part of twoFieldKey below, and returns small figures verbatim,
-// else signals magnitudes in a way susceptible to sorting.
-// Parameter 'x' must be non-negative.
-func magnitudeAwareKey(x int32) uint8 {
-	if x <= 11 {
-		return uint8(x)
-	}
-	// For all larger numbers, store the number of bytes +11.
-	if x <= 0xffff {
-		if x <= 0xff {
-			return 12
-		}
-		return 13
-	}
-	if x <= 0xffffff {
-		return 14
-	}
-	return 15
-}
-
-// twoFieldKey is part of multikeyRadixSort and derives a key from two fields in 'v'.
-// The order established by the keys is ascending but not total:
-// fields with great values map to a low-resolution key.
-// Fields must be non-negative.
-func twoFieldKey(v *[14]int32, keyIndex uint8) uint8 {
-	n1 := magnitudeAwareKey(v[keyIndex]) << 4
-	if n1 >= (12 << 4) {
-		return n1
-	}
-	return (n1 | magnitudeAwareKey(v[keyIndex+1]))
-}
-
 // multikeyRadixSort exploits the typical distribution of Version values
 // to use  two keys at once  in a radix-sort run.
 func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
@@ -114,7 +82,7 @@ func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
 		if v == nil {
 			continue
 		}
-		k := twoFieldKey(&v.version, uint8(keyIndex))
+		k := uint8(twoFieldKey(&v.version, uint8(keyIndex)))
 		offset[k]++
 	}
 	watermark := offset[0] - offset[0] // 'watermark' will finally be the total tally.
@@ -140,7 +108,7 @@ func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
 		if v == nil {
 			continue
 		}
-		k := twoFieldKey(&v.version, uint8(keyIndex))
+		k := uint8(twoFieldKey(&v.version, uint8(keyIndex)))
 		p[offset[k]] = v
 		offset[k]++
 	}
@@ -151,6 +119,15 @@ func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
 // multikeyRadixSortDescent is multikeyRadixSort's outsourced descent- and recurse steps.
 // Split for easier profiling.
 func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, offset [256]int) {
+	// Collapse resolved lower fields if below unresolved larger fields.
+	// Consider 2007.9 and 2008.6 that both map to 0b0011… and would be misordered as 9>6.
+	for i := uint8(12); i < 16; i++ { // 12 to 15 represent "unresolved"/"consider N-11 digits".
+		strideEnd := offset[i<<4|0x0f]
+		for j := i << 4; j < (i<<4 | 0x0f); j++ {
+			offset[j] = strideEnd
+		}
+	}
+
 	// Any tailing nil are beyond offsets, henceforth no longer considered.
 	watermark := offset[0] - offset[0]
 	for k, ceiling := range offset {
