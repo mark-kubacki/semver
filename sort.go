@@ -16,6 +16,8 @@ const (
 	// but got a range of close results; you could go as low
 	// as 64 or 32 on some architectures.
 	thresholdForResidualSort = 128
+
+	maxKeyIndex = 13 // len(Version.version) - 1
 )
 
 // Radix sort—and variants will be used below—needs some scratch space,
@@ -147,7 +149,10 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 
 		subslice := p[watermark:ceiling]
 		watermark = ceiling
-		if subsliceLen < thresholdForResidualSort || keyIndex >= 3 {
+		if subslice.isSorted() {
+			continue
+		}
+		if subsliceLen < thresholdForResidualSort {
 			sort.Sort(subslice)
 			continue
 		}
@@ -159,8 +164,6 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 		case k >= (12 << 4): // Unsorted trailer with values that keyFn did not resolve.
 			maxBits := ((k >> 4) - 11) * 8
 			subslice.radixSort(tmp, keyIndex, maxBits)
-		case keyIndex >= 1: // Guards the below call to multikeyRadixSort.
-			sort.Sort(subslice)
 		default:
 			subslice.multikeyRadixSort(tmp, keyIndex+2)
 		}
@@ -172,7 +175,7 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 //
 // Tailing nil are expected to have been stripped.
 func (p VersionPtrs) radixSort(tmp []*Version, keyIndex, maxBits uint8) {
-	if keyIndex > 3 {
+	if keyIndex > maxKeyIndex {
 		panic("keyIndex out of bounds")
 	}
 	from, to := p, tmp[:len(p)] // Have the compiler check this once.
@@ -219,6 +222,10 @@ func (p VersionPtrs) radixSort(tmp []*Version, keyIndex, maxBits uint8) {
 // radixSortDescent is radixSort's outsourced descent- and recurse steps.
 // Split for easier profiling.
 func (p VersionPtrs) radixSortDescent(tmp []*Version, keyIndex uint8) {
+	if keyIndex >= maxKeyIndex {
+		return // Nothing to sort anymore.
+	}
+
 	// The descent. multikeyRadixSort has only one run, hence
 	// is able to read strides from its histogram ("offset[]").
 	// As classical radix sort cannot (even if optimized to one run for the histogram),
@@ -236,20 +243,36 @@ func (p VersionPtrs) radixSortDescent(tmp []*Version, keyIndex uint8) {
 		}
 
 		subslice := p[startIdx:i]
-		if i-startIdx < thresholdForResidualSort || keyIndex >= 2 {
-			sort.Sort(subslice)
-		} else {
-			subslice.multikeyRadixSort(tmp, keyIndex+1)
+		if subslice.isSorted() {
+			startIdx, lastValue = i, value
+			continue
 		}
+
+		residualLength := i - startIdx
 		startIdx, lastValue = i, value
+		switch {
+		case residualLength < thresholdForResidualSort:
+			sort.Sort(subslice)
+		case keyIndex <= (maxKeyIndex - 2):
+			subslice.multikeyRadixSort(tmp, keyIndex+1)
+		default:
+			subslice.radixSort(tmp, keyIndex+1, 32)
+		}
 	}
 	// Capture trailer of same values (such as 250.100, 250.0).
 	if residualLength := len(p) - startIdx; residualLength > 1 {
 		subslice := p[startIdx:]
-		if residualLength < thresholdForResidualSort || keyIndex >= 2 {
+		if subslice.isSorted() {
+			return
+		}
+
+		switch {
+		case residualLength < thresholdForResidualSort:
 			sort.Sort(subslice)
-		} else {
+		case keyIndex <= (maxKeyIndex - 2):
 			subslice.multikeyRadixSort(tmp, keyIndex+1)
+		default:
+			subslice.radixSort(tmp, keyIndex+1, 32)
 		}
 	}
 }

@@ -11,3 +11,19 @@ package semver
 //
 //go:noescape
 func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint64
+
+// isSorted is called by radixSort and multikeyRadixSort, and won't contain any nil.
+func (p VersionPtrs) isSorted() bool {
+	if len(p) < 2 {
+		return true
+	}
+
+	previous := p[0]
+	for _, ptr := range p {
+		if compare(&previous.version, &ptr.version) > 0 {
+			return false
+		}
+		previous = ptr
+	}
+	return true
+}
