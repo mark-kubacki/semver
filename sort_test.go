@@ -115,21 +115,41 @@ func TestTwoFieldKey(t *testing.T) {
 		for _, testcase := range []struct {
 			version     string
 			keyIndex    uint8
+			adjustment  uint64
 			expectedKey []uint8
 		}{
 			// Examine output beyond thresholds for resolved/unresolved fields.
-			{"9.16777216", 0, []uint8{(9<<4 | 15)}},
-			{"9.65536", 0, []uint8{(9<<4 | 14)}},
-			{"9.256", 0, []uint8{(9<<4 | 13)}},
-			{"9.250", 0, []uint8{(9<<4 | 12)}},
-			{"11.11", 0, []uint8{(11<<4 | 11)}},
-			{"250.9", 0, []uint8{(12<<4 | 9), (12 << 4)}},
-			{"256.9", 0, []uint8{(13<<4 | 9), (13 << 4)}},
-			{"65536.9", 0, []uint8{(14<<4 | 9), (14 << 4)}},
-			{"16777216.9", 0, []uint8{(15<<4 | 9), (15 << 4)}},
+			{"9.16777216", 0, 0, []uint8{(9<<4 | 15)}},
+			{"9.65536", 0, 0, []uint8{(9<<4 | 14)}},
+			{"9.256", 0, 0, []uint8{(9<<4 | 13)}},
+			{"9.250", 0, 0, []uint8{(9<<4 | 12)}},
+			{"11.11", 0, 0, []uint8{(11<<4 | 11)}},
+			{"250.9", 0, 0, []uint8{(12<<4 | 9), (12 << 4)}},
+			{"256.9", 0, 0, []uint8{(13<<4 | 9), (13 << 4)}},
+			{"65536.9", 0, 0, []uint8{(14<<4 | 9), (14 << 4)}},
+			{"16777216.9", 0, 0, []uint8{(15<<4 | 9), (15 << 4)}},
+			// Walk indices, and non-positive fields which get a +4 (as (-alpha) = 4).
+			{"1.2.3.4-alpha5.6.7.8", 0, 0, []uint8{(1<<4 | 2)}},
+			{"1.2.3.4-alpha5.6.7.8", 1, 0, []uint8{(2<<4 | 3)}},
+			{"1.2.3.4-alpha5.6.7.8", 2, 0, []uint8{(3<<4 | 4)}},
+			{"1.2.3.4-alpha5.6.7.8", 3, (-alpha) << 32, []uint8{(4<<4 | 0)}},
+			{"1.2.3.4-beta5.6.7.8", 3, (-alpha) << 32, []uint8{(4<<4 | 1)}},
+			{"1.2.3.4-5.6.7.8", 3, (-alpha) << 32, []uint8{(4<<4 | (-alpha))}},
+			{"1.2.3.4-r5.6.7.8", 3, (-alpha) << 32, []uint8{(4<<4 | 5)}},
+			{"1.2.3.4-alpha5.6.7.8", 4, (-alpha), []uint8{(0<<4 | 5)}},
+			{"1.2.3.4-beta5.6.7.8", 4, (-alpha), []uint8{(1<<4 | 5)}},
+			{"1.2.3.4-5.6.7.8", 4, (-alpha), []uint8{(4<<4 | 5)}},
+			{"1.2.3.4-r5.6.7.8", 4, (-alpha), []uint8{(5<<4 | 5)}},
+			{"1.2.3.4-r", 4, (-alpha), []uint8{(5<<4 | 0)}},
+			{"1.2.3.4-alpha5.6.7.8", 5, 0, []uint8{(5<<4 | 6)}},
+			// Deepest non-negative fields.
+			{"1-beta6-beta7", 8, (-alpha) << 32, []uint8{(0<<4 | 1)}},
+			{"1-beta6-beta7", 9, (-alpha), []uint8{(1<<4 | 7)}},
 		} {
 			given, _ := NewVersion([]byte(testcase.version))
-			gotKey := uint8(twoFieldKey(&given.version, testcase.keyIndex))
+			gotKey := uint8(twoFieldKey(&given.version,
+				testcase.adjustment,
+				testcase.keyIndex))
 			// The keyFn could've already collapsed lower fields below unresolved larger fields.
 			So(gotKey, ShouldBeIn, testcase.expectedKey)
 		}
@@ -140,7 +160,7 @@ func TestTwoFieldKey(t *testing.T) {
 // the cpu's branch predictor is utilized "realistically."
 // That is, merely using one version might appear to be faster.
 
-var tmpForTwoFieldKey = twoFieldKey(&benchV.version, 0) // To inherit its return type.
+var tmpForTwoFieldKey = twoFieldKey(&benchV.version, 0, 0) // To inherit its return type.
 
 func BenchmarkTwoFieldKey(b *testing.B) {
 	b.StopTimer()
@@ -150,6 +170,6 @@ func BenchmarkTwoFieldKey(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		v := versions[i%versionsLen]
-		tmpForTwoFieldKey |= twoFieldKey(&v.version, 0)
+		tmpForTwoFieldKey |= twoFieldKey(&v.version, 0, 0)
 	}
 }

@@ -74,7 +74,15 @@ func (p VersionPtrs) Sort() {
 // multikeyRadixSort exploits the typical distribution of Version values
 // to use  two keys at once  in a radix-sort run.
 func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
-	keyIndex &= 0x07 // Signals the compiler we expect a limited set of values for this.
+	// Some fields can be negative and need to get a bump. (Mind order in memory!)
+	// As "alpha" is the lowest one, use its absolute value.
+	var fieldAdjustment uint64 = 0
+	switch keyIndex {
+	case 3, 8:
+		fieldAdjustment = (-alpha) << 32
+	case 4, 9:
+		fieldAdjustment = (-alpha)
+	}
 
 	// Collate the histogram.
 	var offset [256]int
@@ -82,7 +90,7 @@ func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
 		if v == nil {
 			continue
 		}
-		k := uint8(twoFieldKey(&v.version, uint8(keyIndex)))
+		k := uint8(twoFieldKey(&v.version, fieldAdjustment, uint8(keyIndex)))
 		offset[k]++
 	}
 	watermark := offset[0] - offset[0] // 'watermark' will finally be the total tally.
@@ -108,7 +116,7 @@ func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
 		if v == nil {
 			continue
 		}
-		k := uint8(twoFieldKey(&v.version, uint8(keyIndex)))
+		k := uint8(twoFieldKey(&v.version, fieldAdjustment, uint8(keyIndex)))
 		p[offset[k]] = v
 		offset[k]++
 	}

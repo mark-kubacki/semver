@@ -33,10 +33,12 @@ func magnitudeAwareKey(x int32) uint8 {
 //
 // This is the Go-only implementation, available for benchmarks on architectures
 // that otherwise used an optimized variant.
-func twoFieldKey(v *[14]int32, keyIndex uint8) uint8 {
-	n1 := magnitudeAwareKey(v[keyIndex]) << 4
+func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint8 {
+	off := int32(fieldAdjustment)
+	n1 := magnitudeAwareKey(v[keyIndex]+off) << 4
 	if n1 >= (12 << 4) {
 		return n1
 	}
-	return (n1 | magnitudeAwareKey(v[keyIndex+1]))
+	off = int32(fieldAdjustment >> 32)
+	return (n1 | magnitudeAwareKey(v[keyIndex+1]+off))
 }

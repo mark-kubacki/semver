@@ -10,4 +10,4 @@ package semver
 // Please see the *_generic.go file for a detailed description.
 //
 //go:noescape
-func twoFieldKey(v *[14]int32, keyIndex uint8) uint64
+func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint64

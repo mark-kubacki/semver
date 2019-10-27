@@ -5,18 +5,21 @@
 #include "go_asm.h"
 #include "textflag.h"
 
-TEXT ·twoFieldKey(SB),NOSPLIT,$0-24
+TEXT ·twoFieldKey(SB),NOSPLIT,$0-32
     MOVQ    v+0(FP), SI
-    MOVBQZX keyIndex+8(FP), AX
+    MOVQ    fieldAdjustment+8(FP), M1    // Two packed L.
+    MOVBQZX keyIndex+16(FP), AX
+
+    // Contains the two relevant fields. They need to be swapped, though.
+    MOVQ    (SI)(AX*4), M0
+    PADDL   M1, M0
+    MOVQ    M0, AX
 
     // This function is comprised of two interleaved calculations (to hide within latencies)
     // which use register as follows.
     // M5, M6, M7: Select value of fields <=11, or NN to add to the result below.
     // M0 to M4: Number of digits (bytes) used. Will eventually be 0 for any <=11.
     //           Calculated without LZCNT or POPCNT.
-
-    // Contains the two relevant fields. They need to be swapped, though.
-    MOVQ    (SI)(AX*4), AX
 
     MOVQ    $0x0000000b0000000b, DX // {11, 11}
    MOVQ     $0x0000000100000010, CX // shift the rightmost byte by <<4.
@@ -57,6 +60,6 @@ TEXT ·twoFieldKey(SB),NOSPLIT,$0-24
     BYTE $0x0f; BYTE $0xf6; BYTE $0xd3 // PSADBW  M3, M2
 
     // Converting this to a uint8 here would be inefficient.
-    MOVQ    M2, ret+16(FP)
+    MOVQ    M2, ret+24(FP)
     EMMS
     RET
