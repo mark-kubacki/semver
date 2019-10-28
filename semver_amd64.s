@@ -65,7 +65,7 @@ TEXT ·less(SB),NOSPLIT,$0-17
 	MOVQ	o+8(FP), DI
 
 	XORQ	DX, DX
-	XORQ	R8, R8
+	XORQ	BX, BX
 less_loop:
 	MOVOU	(DI)(DX*1), X1
 	MOVOU	(SI)(DX*1), X0
@@ -86,10 +86,10 @@ less_determine:
 	PCMPGTL	X1, X0		// 2.1.0.0 |>| 3.0.1.0 -> 0.1.0.0
 	PSHUFL	$27, X3, X3	// $27 is [0, 1, 2, 3], reverse order of elements to get a workable mask below.
 	PSHUFL	$27, X0, X0
-	MOVMSKPS X3, BX		// 1010
+	MOVMSKPS X3, CX		// 1010
 	MOVMSKPS X0, AX		// 0100
-	CMPB	BX, AX
-	SETGT	R8
+	CMPB	CX, AX
+	SETGT	BX
 less_eol:
-	MOVB	R8, ret+16(FP)
+	MOVB	BX, ret+16(FP)
 	RET
