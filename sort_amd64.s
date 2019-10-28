@@ -20,10 +20,12 @@ TEXT ·twoFieldKey(SB),NOSPLIT,$0-32
     // M0 to M4: Number of digits (bytes) used. Will eventually be 0 for any <=11.
     //           Calculated without LZCNT or POPCNT.
 
-    MOVQ    elevenPL(SB), M1
+    MOVQ    $0x0000000b0000000b, DX // {11, 11}
+   MOVQ     $0x0000000100000010, CX // shift the rightmost byte by <<4.
+    MOVQ    DX, M1
     // PSHUFW  $0xe4, M0, M4 // Just a fancy MOVQ M0, M4 // The assembler throws "invalid instruction".
     BYTE $0x0f; BYTE $0x70; BYTE $0xe0; BYTE $0xe4
-   MOVQ     elevenPL(SB), M7
+   MOVQ     DX, M7
     PCMPGTL M1, M4          // Holds the "greater-than-11"-mask.
     PXOR    M1, M1
    BYTE $0x0f; BYTE $0x70; BYTE $0xe8; BYTE $0xe4 // PSHUFW // MOVQ M0, M5
@@ -32,9 +34,10 @@ TEXT ·twoFieldKey(SB),NOSPLIT,$0-32
     // M0, the input, is no longer needed.
     PCMPEQB M3, M3
     PXOR    M3, M1          // ~M1
-    MOVQ    movmaskAndSwapPB(SB), M2
+    MOVQ    $0x0101010110101010, BX // {0x01…, 0x10…}
+    MOVQ    BX, M2
     PAND    M2, M1          // 0xff → 0x01 and so forth
-   MOVQ     shiftRightByFourPL(SB), M0
+   MOVQ     CX, M0
    PCMPGTL  M7, M5
     PAND    M1, M2          // MOVQ M1, M2; M1 and M2 are the same.
    PAND     M5, M7
@@ -59,13 +62,3 @@ TEXT ·twoFieldKey(SB),NOSPLIT,$0-32
     MOVQ    M2, ret+24(FP)
     EMMS
     RET
-
-
-DATA elevenPL+0x00(SB)/8,           $0x0000000b0000000b // {11, 11}
-GLOBL elevenPL(SB), (RODATA+NOPTR), $8
-
-DATA shiftRightByFourPL+0x00(SB)/8, $0x0000000100000010 // shift the rightmost byte by <<4.
-GLOBL shiftRightByFourPL(SB), (RODATA+NOPTR), $8
-
-DATA movmaskAndSwapPB+0x00(SB)/8,   $0x0101010110101010 // {0x01…, 0x10…}
-GLOBL movmaskAndSwapPB(SB), (RODATA+NOPTR), $8
