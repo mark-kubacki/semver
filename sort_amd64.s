@@ -13,7 +13,6 @@ TEXT ·twoFieldKey(SB),NOSPLIT,$0-32
     // Contains the two relevant fields. They need to be swapped, though.
     MOVQ    (SI)(AX*4), M0
     PADDL   M1, M0
-    MOVQ    M0, AX
 
     // This function is comprised of two interleaved calculations (to hide within latencies)
     // which use register as follows.
@@ -24,15 +23,15 @@ TEXT ·twoFieldKey(SB),NOSPLIT,$0-32
     MOVQ    $0x0000000b0000000b, DX // {11, 11}
    MOVQ     $0x0000000100000010, CX // shift the rightmost byte by <<4.
     MOVQ    DX, M1
+    // PSHUFW  $0xe4, M0, M4 // Just a fancy MOVQ M0, M4 // The assembler throws "invalid instruction".
+    BYTE $0x0f; BYTE $0x70; BYTE $0xe0; BYTE $0xe4
    MOVQ     DX, M7
-    MOVQ    AX, M4
-    MOVQ    AX, M0
     PCMPGTL M1, M4          // Holds the "greater-than-11"-mask.
     PXOR    M1, M1
-   MOVQ     AX, M5
+   BYTE $0x0f; BYTE $0x70; BYTE $0xe8; BYTE $0xe4 // PSHUFW // MOVQ M0, M5
     PCMPEQB M0, M1          // This saturates whole bytes, and leaves gaps inbetween.
-   MOVQ     AX, M6
-    // free M0
+   BYTE $0x0f; BYTE $0x70; BYTE $0xf0; BYTE $0xe4 // PSHUFW // MOVQ M0, M6
+    // M0, the input, is no longer needed.
     PCMPEQB M3, M3
     PXOR    M3, M1          // ~M1
     MOVQ    $0x0101010110101010, BX // {0x01…, 0x10…}
