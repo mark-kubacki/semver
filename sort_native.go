@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build amd64
+// +build amd64 386
 
 package semver
 
@@ -10,7 +10,7 @@ package semver
 // Please see the *_generic.go file for a detailed description.
 //
 //go:noescape
-func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint64
+func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint
 
 // isSorted is called by radixSort and multikeyRadixSort, and won't contain any nil.
 func (p VersionPtrs) isSorted(skipFields uint) bool {
