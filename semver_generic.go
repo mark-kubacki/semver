@@ -24,6 +24,19 @@ func Compare(a, b Version) int {
 	return 0
 }
 
+// compare works like the exported Compare,
+// only that it allows to skip fields for performance reasons.
+func compare(a, b Version, skipFields uint) int {
+	for i := int(skipFields); i < len(a.version); i++ {
+		if a.version[i] == b.version[i] {
+			continue
+		}
+		x := a.version[i] - b.version[i]
+		return int((x >> 31) - (-x >> 31))
+	}
+	return 0
+}
+
 // Less is a convenience function for sorting.
 func (t Version) Less(o Version) bool {
 	for i := 0; i < len(t.version); i++ {

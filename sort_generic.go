@@ -43,8 +43,8 @@ func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint8 {
 	return (n1 | magnitudeAwareKey(v[keyIndex+1]+off))
 }
 
-func (p VersionPtrs) isSorted() bool {
-	if len(p) < 2 {
+func (p VersionPtrs) isSorted(skipFields uint) bool {
+	if len(p) < 2 || skipFields > maxKeyIndex {
 		return true
 	}
 
@@ -57,7 +57,7 @@ func (p VersionPtrs) isSorted() bool {
 			continue
 		}
 
-		if Compare(*previous, *ptr) > 0 {
+		if compare(*previous, *ptr, skipFields) > 0 {
 			return false
 		}
 		previous = ptr

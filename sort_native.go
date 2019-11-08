@@ -13,7 +13,7 @@ package semver
 func twoFieldKey(v *[14]int32, fieldAdjustment uint64, keyIndex uint8) uint64
 
 // isSorted is called by radixSort and multikeyRadixSort, and won't contain any nil.
-func (p VersionPtrs) isSorted() bool {
+func (p VersionPtrs) isSorted(skipFields uint) bool {
 	if len(p) < 2 {
 		return true
 	}

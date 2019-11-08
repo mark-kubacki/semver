@@ -149,7 +149,10 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 
 		subslice := p[watermark:ceiling]
 		watermark = ceiling
-		if subslice.isSorted() {
+		unresolvedLeftSide := uint8(k) >= (12 << 4)
+		if (!unresolvedLeftSide || subsliceLen < thresholdForResidualSort) &&
+			// Else the probability to encounter an already sorted stride is too low.
+			subslice.isSorted(uint(keyIndex)) {
 			continue
 		}
 		if subsliceLen < thresholdForResidualSort {
@@ -158,12 +161,12 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 		}
 
 		switch k := uint8(k); {
+		case unresolvedLeftSide: // Unsorted trailer with values that keyFn did not resolve.
+			maxBits := ((k >> 4) - 11) * 8
+			subslice.radixSort(tmp, keyIndex, maxBits)
 		case (k & 0x0f) >= 12: // This key is in order, the next is not: descent.
 			maxBits := ((k & 0x0f) - 11) * 8 // 12 → 1 → 8
 			subslice.radixSort(tmp, keyIndex+1, maxBits)
-		case k >= (12 << 4): // Unsorted trailer with values that keyFn did not resolve.
-			maxBits := ((k >> 4) - 11) * 8
-			subslice.radixSort(tmp, keyIndex, maxBits)
 		default:
 			subslice.multikeyRadixSort(tmp, keyIndex+2)
 		}
@@ -243,7 +246,7 @@ func (p VersionPtrs) radixSortDescent(tmp []*Version, keyIndex uint8) {
 		}
 
 		subslice := p[startIdx:i]
-		if subslice.isSorted() {
+		if subslice.isSorted(uint(keyIndex + 1)) {
 			startIdx, lastValue = i, value
 			continue
 		}
@@ -262,7 +265,7 @@ func (p VersionPtrs) radixSortDescent(tmp []*Version, keyIndex uint8) {
 	// Capture trailer of same values (such as 250.100, 250.0).
 	if residualLength := len(p) - startIdx; residualLength > 1 {
 		subslice := p[startIdx:]
-		if subslice.isSorted() {
+		if subslice.isSorted(uint(keyIndex + 1)) {
 			return
 		}
 
