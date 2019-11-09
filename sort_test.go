@@ -19,7 +19,7 @@ func makeVersionCollection(b *testing.B) ([]Version, []*Version) {
 	for n, src := range VersionsFromGentoo {
 		if err := actual[n].UnmarshalText(src); err != nil {
 			actual[n].UnmarshalText(verForBenchmarks)
-			erroneous += 1
+			erroneous++
 		}
 		unsorted[n] = &actual[n]
 	}
@@ -85,6 +85,11 @@ func TestSortPtr(t *testing.T) {
 		})
 
 		Convey("does not lose elements", func() {
+			if len(data) > 100000 {
+				// In a benchmark situation, skip this as it is O(n²).
+				SkipSo(true, ShouldBeTrue)
+				return
+			}
 			So(containsAll(unsorted, data), ShouldBeTrue)
 		})
 	})
