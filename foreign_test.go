@@ -10,42 +10,40 @@ import (
 	hashicorp "github.com/hashicorp/go-version"
 )
 
-var benchHashicorpV, benchHashicorpErr = hashicorp.NewVersion(strForBenchmarks)
+var benchLibraryOneV, benchLibraryOneErr = hashicorp.NewVersion(strForBenchmarks)
 
-func BenchmarkHashicorpNewVersion(b *testing.B) {
+func BenchmarkLibraryOne_NewVersion(b *testing.B) {
 	var v, e = hashicorp.NewVersion(strForBenchmarks)
 	lim := len(VersionsFromGentoo)
 
 	for n := 0; n < b.N; n++ {
 		v, e = hashicorp.NewVersion(string(VersionsFromGentoo[n%lim]))
 	}
-	benchHashicorpV, benchHashicorpErr = v, e
+	benchLibraryOneV, benchLibraryOneErr = v, e
 }
 
-var benchHashicorpR, benchHashicorpRErr = hashicorp.NewConstraint(">=1.2.3, <=1.3.0")
+var benchLibraryOneR, benchLibraryOneRErr = hashicorp.NewConstraint(">=1.2.3, <=1.3.0")
 
-func BenchmarkHashicorpNewConstraint(b *testing.B) {
+func BenchmarkLibraryOne_NewConstraint(b *testing.B) {
 	var r, e = hashicorp.NewConstraint(">=1.2.3, <=1.3.0")
 	for n := 0; n < b.N; n++ {
 		r, e = hashicorp.NewConstraint(">=1.2.3, <=1.3.0")
 	}
-	benchHashicorpR, benchHashicorpRErr = r, e
+	benchLibraryOneR, benchLibraryOneRErr = r, e
 }
 
-var benchHashicorpResult = 5
+var benchLibraryOneResult = 5
 
-func BenchmarkHashicorpCompare(b *testing.B) {
+func BenchmarkLibraryOne_Compare(b *testing.B) {
 	var v, _ = hashicorp.NewVersion(strForBenchmarks)
-	r := benchHashicorpV.Compare(v)
+	r := benchLibraryOneV.Compare(v)
 	for n := 0; n < b.N; n++ {
-		r = benchHashicorpV.Compare(v)
+		r = benchLibraryOneV.Compare(v)
 	}
-	benchHashicorpResult = r
+	benchLibraryOneResult = r
 }
 
-var benchBlangV, benchBlangErr = blang.Make(strForBenchmarks)
-
-func BenchmarkHashicorp_SortPtr(b *testing.B) {
+func BenchmarkLibraryOne_SortPtr(b *testing.B) {
 	b.StopTimer()
 	var erroneous int
 	unsorted := make([]*hashicorp.Version, len(VersionsFromGentoo))
@@ -68,38 +66,44 @@ func BenchmarkHashicorp_SortPtr(b *testing.B) {
 	}
 }
 
-func BenchmarkBlangMake(b *testing.B) {
+// Blang published their library after mine, and doing so even did imitate parts
+// of my first release.
+// Yet, as of writing this, their error rate is a staggering 30%.
+
+var benchLibraryTwoV, benchLibraryTwoErr = blang.Make(strForBenchmarks)
+
+func BenchmarkLibraryTwo_Make(b *testing.B) {
 	var v, e = blang.Make(strForBenchmarks)
 	lim := len(VersionsFromGentoo)
 
 	for n := 0; n < b.N; n++ {
 		v, e = blang.Make(string(VersionsFromGentoo[n%lim]))
 	}
-	benchBlangV, benchBlangErr = v, e
+	benchLibraryTwoV, benchLibraryTwoErr = v, e
 }
 
-var benchBlangR, benchBlangRErr = blang.ParseRange(">=1.2.3 <=1.3.0")
+var benchLibraryTwoR, benchLibraryTwoRErr = blang.ParseRange(">=1.2.3 <=1.3.0")
 
-func BenchmarkBlangParseRange(b *testing.B) {
+func BenchmarkLibraryTwo_ParseRange(b *testing.B) {
 	var r, e = blang.ParseRange(">=1.2.3 <=1.3.0")
 	for n := 0; n < b.N; n++ {
 		r, e = blang.ParseRange(">=1.2.3 <=1.3.0")
 	}
-	benchBlangR, benchBlangRErr = r, e
+	benchLibraryTwoR, benchLibraryTwoRErr = r, e
 }
 
-var benchBlangResult = 5
+var benchLibraryTwoResult = 5
 
-func BenchmarkBlangCompare(b *testing.B) {
+func BenchmarkLibraryTwo_Compare(b *testing.B) {
 	var v, _ = blang.Make(strForBenchmarks)
-	r := benchBlangV.Compare(v)
+	r := benchLibraryTwoV.Compare(v)
 	for n := 0; n < b.N; n++ {
-		r = benchBlangV.Compare(v)
+		r = benchLibraryTwoV.Compare(v)
 	}
-	benchBlangResult = r
+	benchLibraryTwoResult = r
 }
 
-func BenchmarkBlang_Sort(b *testing.B) {
+func BenchmarkLibraryTwo_Sort(b *testing.B) {
 	b.StopTimer()
 	var erroneous int
 	unsorted := make([]blang.Version, len(VersionsFromGentoo))
