@@ -3,6 +3,8 @@
 package semver
 
 import (
+	"fmt"
+	"math/rand"
 	"sort"
 	"testing"
 
@@ -51,8 +53,9 @@ func BenchmarkLibraryOne_SortPtr(b *testing.B) {
 		if v, err := hashicorp.NewVersion(string(src)); err == nil {
 			unsorted[n] = v
 		} else {
-			unsorted[n], _ = hashicorp.NewVersion(strForBenchmarks)
-			erroneous += 1
+			substitute := fmt.Sprintf("%s.%d", strForBenchmarks, rand.Intn(len(VersionsFromGentoo)))
+			unsorted[n], _ = hashicorp.NewVersion(substitute)
+			erroneous++
 		}
 	}
 	b.ReportMetric(float64(erroneous)/float64(len(unsorted)), "substitutes/op")
@@ -111,8 +114,9 @@ func BenchmarkLibraryTwo_Sort(b *testing.B) {
 		if v, err := blang.ParseTolerant(string(src)); err == nil {
 			unsorted[n] = v
 		} else {
-			unsorted[n], _ = blang.ParseTolerant(strForBenchmarks)
-			erroneous += 1
+			substitute := fmt.Sprintf("%s.%d", strForBenchmarks, rand.Intn(len(VersionsFromGentoo)))
+			unsorted[n], _ = blang.ParseTolerant(substitute)
+			erroneous++
 		}
 	}
 	b.ReportMetric(float64(erroneous)/float64(len(unsorted)), "substitutes/op")

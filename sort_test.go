@@ -7,6 +7,8 @@
 package semver
 
 import (
+	"fmt"
+	"math/rand"
 	"sort"
 	"testing"
 
@@ -20,7 +22,8 @@ func makeVersionCollection(b *testing.B) ([]Version, []*Version) {
 	actual := make([]Version, len(VersionsFromGentoo))
 	for n, src := range VersionsFromGentoo {
 		if err := actual[n].UnmarshalText(src); err != nil {
-			actual[n].UnmarshalText(verForBenchmarks)
+			substitute := fmt.Sprintf("%s.%d", strForBenchmarks, rand.Intn(len(VersionsFromGentoo)))
+			actual[n].UnmarshalText([]byte(substitute))
 			erroneous++
 		}
 		unsorted[n] = &actual[n]
