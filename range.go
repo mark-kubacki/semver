@@ -22,7 +22,7 @@ type Range struct {
 // NewRange translates into a Range.
 func NewRange(str []byte) (Range, error) {
 	if len(str) == 0 || (len(str) == 1 && (str[0] == '*' || str[0] == 'x')) {
-		// an empty Range contains everything
+		// An empty Range contains everything.
 		return Range{}, nil
 	}
 	isNaturalRange := true

@@ -1,13 +1,14 @@
 Semantic Versioning for Golang
 ==============================
 
-[![GoDoc](https://godoc.org/github.com/wmark/semver?status.png)](https://godoc.org/github.com/wmark/semver)
+[![GoDoc](https://godoc.org/blitznote.com/src/semver?status.png)](https://godoc.org/blitznote.com/src/semver)
 
 A library for parsing and processing of *Versions* and *Ranges* in:
 
 * [Semantic Versioning](http://semver.org/) (semver) v2.0.0 notation
   * used by npmjs.org, pypi.org…
 * Gentoo's ebuild format
+* The fastest implementation, and the one that'll actually parse all semver variants correctly and without errors.
 
 Does not rely on *regular expressions* neither does it use package *reflection*.
 
@@ -58,7 +59,7 @@ r1.Contains(v1)      // true
 r1.IsSatisfiedBy(v1) // false (pre-releases don't satisfy)
 ```
 
-Also check the [GoDocs](https://godoc.org/blitznote.com/src/semver)
+Also check its [go.dev](https://pkg.go.dev/blitznote.com/src/semver/v3?tab=overview) listing
 and [Gentoo Linux Ebuild File Format](http://devmanual.gentoo.org/ebuild-writing/file-format/),
 [Gentoo's notation of dependencies](http://devmanual.gentoo.org/general-concepts/dependencies/).
 
@@ -78,16 +79,14 @@ Therefore it is:
 Version 2 no longer supports dot-tag notation.
 That is, `1.8.rc2` will be rejected, valid are `1.8rc2` and `1.8-rc2`.
 
-Usage Note
-----------
-
-Most *NodeJS* authors write **~1.2.3** where **>=1.2.3** would fit better.
-*~1.2.3* is ```Range(">=1.2.3 <1.3.0")``` and excludes versions such as *1.4.0*,
-which almost always work.
-
 Contribute
 ----------
 
-Pull requests are welcome.  
+Pull requests are welcome.
+
+For anything written in Assembly, please contribute your implementation for one
+architecture only at first. We'll work with this and once it's in, follow up
+with more if you like.
+
 Please add your name and email address to a file *AUTHORS* and/or *CONTRIBUTORS*.  
 Thanks!

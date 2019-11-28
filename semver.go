@@ -8,7 +8,7 @@ import (
 	"bytes"
 )
 
-// Errors that are thrown when translating from a string.
+// Errors that are thrown during parsing.
 const (
 	errInvalidVersionString InvalidStringValue = "Given string does not resemble a Version"
 	errTooManyColumns       InvalidStringValue = "Version consists of too many columns"
@@ -57,13 +57,14 @@ var releaseValue = map[string]int{
 
 var buildsuffix = []byte("+build")
 
-// InvalidStringValue instances are returned as error on any conversion failures.
+// InvalidStringValue instances are returned as error on any conversion failure.
 type InvalidStringValue string
 
 // Error implements the error interface.
 func (e InvalidStringValue) Error() string { return string(e) }
 
 // IsInvalid satisfies a function IsInvalid().
+// This is used by some input validator packages.
 func (e InvalidStringValue) IsInvalid() bool { return true }
 
 // Version represents a version:
@@ -76,7 +77,7 @@ type Version struct {
 	_       int32
 }
 
-// MustParse is NewVersion on strings, and panics on errors.
+// MustParse is NewVersion for strings, and panics on errors.
 //
 // Use this in tests or with constants, e. g. whenever you control the input.
 //
@@ -92,8 +93,8 @@ func MustParse(str string) Version {
 // NewVersion translates the given string, which must be free of whitespace,
 // into a single Version.
 //
-// As by convention, an io.Reader will give you []byte,
-// this (and most functions internally) accordingly works on []byte.
+// An io.Reader will give you []byte, hence this (and most functions internally)
+// works on []byte to have as few conversion as possible.
 func NewVersion(str []byte) (Version, error) {
 	ver := Version{}
 	err := (&ver).unmarshalText(str)
@@ -223,7 +224,7 @@ func (t *Version) unmarshalText(str []byte) error {
 }
 
 // signDelta returns the signum of the difference,
-// which' precision can be limited by 'cuttofIdx'.
+// whose precision can be limited by 'cuttofIdx'.
 func signDelta(a, b [14]int32, cutoffIdx int) int8 {
 	_ = a[0:cutoffIdx]
 	for i := 0; i < len(a) && i < cutoffIdx; i++ {

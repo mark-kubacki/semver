@@ -200,9 +200,9 @@ func (t *Version) Scan(src interface{}) error {
 	return errInvalidType
 }
 
-// Value implements the driver.Valuer interface, as found below database/sql.
+// Value implements the driver.Valuer interface, as found in database/sql.
 //
-// Use string(Version) instead.
+// Deprecated: Use string(Version) instead.
 func (t Version) Value() (interface{}, error) {
 	return t.String(), nil
 }

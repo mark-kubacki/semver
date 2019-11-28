@@ -21,9 +21,9 @@ const (
 )
 
 // Radix sort—and variants will be used below—needs some scratch space,
-// which this pool will provide.
+// which this pool provides.
 //
-// Don't rely on the initial size for new arrays. Expand the capacity if need be.
+// Don't rely on the initial size for new arrays. Expand its capacity if need be.
 var versionPointerBuffer = sync.Pool{
 	New: func() interface{} {
 		b := make([]*Version, 40*1024)
@@ -31,13 +31,14 @@ var versionPointerBuffer = sync.Pool{
 	},
 }
 
-// VersionPtrs represents an array with elements derived from but smaller than Versions.
-// Go through this to sort large collections of Versions to minimize bytes written to memory.
+// VersionPtrs represents an array with elements derived from~ but smaller than Versions.
+// Use this a proxy for sorting of large collections of Versions,
+// to minimize memory moves.
 type VersionPtrs []*Version
 
 // VersionPtrs.Less calls specialized functions.
-// Find it in files *_native.go and *_generic.go.
-// As of Go 1.13 inlining didn't work across two levels.
+// Find them in files *_native.go and *_generic.go.
+// As of Go 1.13 inlining didn't work two levels deep.
 
 // Len implements the sort.Interface.
 func (p VersionPtrs) Len() int {
@@ -51,11 +52,9 @@ func (p VersionPtrs) Swap(i, j int) {
 
 // Sort reorders the pointers so that the Versions appear in ascending order.
 //
-// For that it will use optimized algorithms, usually less time-complex than
+// For that it will use optimized algorithms usually less time-complex than
 // the generic ones found in package 'Sort'.
-// Specifically, variants of radix sort expected to run in O(n);
-// worst case in O(n*log(n)) —which is unlikely— deferring to 'sort.*'
-// on degenerated collections.
+// Specifically, variants of radix sort expected to run in O(n).
 //
 // Allocates a copy of VersionPtrs.
 func (p VersionPtrs) Sort() {
@@ -127,7 +126,7 @@ func (p VersionPtrs) multikeyRadixSort(tmp []*Version, keyIndex uint8) {
 }
 
 // multikeyRadixSortDescent is multikeyRadixSort's outsourced descent- and recurse steps.
-// Split for easier profiling.
+// Extracted for easier profiling.
 func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, offset [256]int) {
 	// Collapse resolved lower fields if below unresolved larger fields.
 	// Consider 2007.9 and 2008.6 that both map to 0b0011… and would be misordered as 9>6.
@@ -147,6 +146,9 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 			continue
 		}
 
+		// Recursion depth is contained in this paragraph.
+		// If 'compare' or 'less' for a particular architecture considers the 'build' suffix
+		// then so must 'isSorted' for this to work.
 		subslice := p[watermark:ceiling]
 		watermark = ceiling
 		unresolvedLeftSide := uint8(k) >= (12 << 4)
@@ -179,6 +181,9 @@ func (p VersionPtrs) multikeyRadixSortDescent(tmp []*Version, keyIndex uint8, of
 // Tailing nil are expected to have been stripped.
 func (p VersionPtrs) radixSort(tmp []*Version, keyIndex, maxBits uint8) {
 	if keyIndex > maxKeyIndex {
+		// This check makes the compiler happy, who will skip checking for that repeatedly.
+		// In case you get this panic though, 'isSorted' and 'less'/'compare' are not
+		// considering the same fields (usually it's 'build' that's been forgotten).
 		panic("keyIndex out of bounds")
 	}
 	from, to := p, tmp[:len(p)] // Have the compiler check this once.
@@ -187,7 +192,7 @@ func (p VersionPtrs) radixSort(tmp []*Version, keyIndex, maxBits uint8) {
 	for fromBits := maxBits - maxBits; fromBits < maxBits; fromBits += 8 {
 		// Building the histogram again.
 		// Although this can be done for all bytes in one run,
-		// which would need a [1024], I found it's slower in Golang.
+		// which would need an [1024]uint, I found it's slower in Golang.
 		for i := range offset {
 			offset[i] = 0
 		}
@@ -223,16 +228,16 @@ func (p VersionPtrs) radixSort(tmp []*Version, keyIndex, maxBits uint8) {
 }
 
 // radixSortDescent is radixSort's outsourced descent- and recurse steps.
-// Split for easier profiling.
+// Extracted for easier profiling.
 func (p VersionPtrs) radixSortDescent(tmp []*Version, keyIndex uint8) {
 	if keyIndex >= maxKeyIndex {
 		return // Nothing to sort anymore.
 	}
 
-	// The descent. multikeyRadixSort has only one run, hence
+	// The descent. Unlike this, multikeyRadixSort does only one run and hence
 	// is able to read strides from its histogram ("offset[]").
 	// As classical radix sort cannot (even if optimized to one run for the histogram),
-	// the collection needs to be visited once more.
+	// the collection needs to be visited once more here.
 	startIdx := 0
 	lastValue := p[0].version[keyIndex]
 	for i, v := range p {
