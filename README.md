@@ -17,15 +17,15 @@ Does not rely on *regular expressions* neither does it use package *reflection*.
 $ sed -i -e 's@ignore@3rdparty@g' *_test.go
 $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
-BenchmarkLibararyOne_NewVersion-24       2000000   815 ns/op   145 B/op   4 allocs/op
+BenchmarkLibraryOne_NewVersion-24        2000000   815 ns/op   145 B/op   4 allocs/op
 BenchmarkLibraryTwo_Make-24              4000000   300 ns/op    94 B/op   3 allocs/op
 Benchmark_NewVersion-24                 30000000    37.2 ns/op   0 B/op   0 allocs/op ←
 
-BenchmarkLibararyOne_NewConstraint-       200000  6350 ns/op  2096 B/op  18 allocs/op
+BenchmarkLibraryOne_NewConstraint-24      200000  6350 ns/op  2096 B/op  18 allocs/op
 BenchmarkLibraryTwo_ParseRange-24        1000000  1440 ns/op   480 B/op  13 allocs/op
 BenchmarkSemverNewRange-24              10000000   120 ns/op     0 B/op   0 allocs/op ←
 
-BenchmarkLibararyOne_Compare-24          1000000  1005 ns/op   395 B/op  12 allocs/op
+BenchmarkLibraryOne_Compare-24           1000000  1005 ns/op   395 B/op  12 allocs/op
 BenchmarkLibraryTwo_Compare-24         100000000    20.2 ns/op   0 B/op   0 allocs/op
 BenchmarkSemverCompare-24              200000000     6.88 ns/op  0 B/op   0 allocs/op ←
 
