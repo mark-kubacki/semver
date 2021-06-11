@@ -385,6 +385,7 @@ var verForBenchmarks = []byte(strForBenchmarks)
 var benchV, benchErr = NewVersion(append(verForBenchmarks, '5'))
 
 func BenchmarkSemverNewVersion(b *testing.B) {
+	b.SkipNow()
 	v, e := NewVersion(verForBenchmarks)
 
 	for n := 0; n < b.N; n++ {
@@ -405,7 +406,7 @@ func Benchmark_NewVersion(b *testing.B) {
 
 var compareResult = 5
 
-func BenchmarkSemverCompare(b *testing.B) {
+func Benchmark_Compare(b *testing.B) {
 	v, _ := NewVersion(verForBenchmarks)
 	r := Compare(benchV, v)
 
@@ -432,6 +433,7 @@ func BenchmarkVersion_Less(b *testing.B) {
 }
 
 func BenchmarkBytesCompare(b *testing.B) {
+	b.SkipNow()
 	var k, m [14]byte
 	r := bytes.Compare(k[:], m[:])
 

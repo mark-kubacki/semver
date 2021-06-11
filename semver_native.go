@@ -8,9 +8,6 @@
 
 package semver
 
-//go:noescape
-func compare(t, o *[14]int32) int
-
 // Compare computes the difference between two Versions and returns its signum.
 //
 //   1  if a > b
@@ -18,9 +15,7 @@ func compare(t, o *[14]int32) int
 //   -1 if a < b
 //
 // The 'build' is not compared.
-func Compare(a, b Version) int {
-	return compare(&a.version, &b.version)
-}
+func Compare(a, b Version) int
 
 // less returns true if t is lexically smaller than o.
 // As side effect, the adjacent 'build' gets compared as well.

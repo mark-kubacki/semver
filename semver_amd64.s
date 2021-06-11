@@ -8,37 +8,35 @@
 #include "go_asm.h"
 #include "textflag.h"
 
-TEXT ·compare(SB),NOSPLIT,$0-24
-	MOVQ	t+0(FP), SI
-	MOVQ	o+8(FP), DI
+TEXT ·Compare(SB),NOSPLIT,$0-136
 	XORQ	CX, CX		// Index of the last examined element.
 
-	MOVOU	(SI), X2
-	MOVOU	(DI), X5
+	MOVOU	a+8(SP), X2
+	MOVOU	b+72(SP), X5
 	PCMPEQL	X5, X2
 	MOVMSKPS X2, AX
 	CMPL	AX, $0x0f
 	JNE	diff
 	MOVQ	$4, CX
 
-	MOVOU	16(SI), X3
-	MOVOU	16(DI), X6
+	MOVOU	a+24(SP), X3
+	MOVOU	b+88(SP), X6
 	PCMPEQL	X6, X3
 	MOVMSKPS X3, AX
 	CMPL	AX, $0x0f
 	JNE	diff
 	MOVQ	$8, CX
 
-	MOVOU	32(SI), X4
-	MOVOU	32(DI), X7
+	MOVOU	a+40(SP), X4
+	MOVOU	b+104(SP), X7
 	PCMPEQL	X7, X4
 	MOVMSKPS X4, AX
 	CMPL	AX, $0x0f
 	JNE	diff
 	MOVQ	$12, CX
 
-	MOVOU	48(SI), X0
-	MOVOU	48(DI), X1
+	MOVOU	a+56(SP), X0
+	MOVOU	b+120(SP), X1
 	PCMPEQL	X1, X0
 	MOVMSKPS X0, AX
 	ORQ	$0xc, AX // Mask undefined space, due to 'build' and then nothing.
@@ -46,7 +44,7 @@ TEXT ·compare(SB),NOSPLIT,$0-24
 	JNE	diff
 
 equal:
-	MOVQ	$0, ret+16(FP)
+	MOVQ	$0, ret+128(FP)
 	RET
 
 diff:
@@ -56,11 +54,11 @@ diff:
 	XORQ	AX, AX
 	ADDQ	BX, CX
 	// Now compare those diverging elements. (AX, BX, DX are free)
-	MOVL	(DI)(CX*4), BX
-	CMPL	BX, (SI)(CX*4)
+	MOVL	b+72(SP)(CX*4), BX
+	CMPL	BX, a+8(SP)(CX*4)
 	SETLT	AX
 	LEAQ	-1(AX*2), AX
-	MOVQ	AX, ret+16(FP)
+	MOVQ	AX, ret+128(FP)
 	RET
 
 TEXT ·less(SB),NOSPLIT,$0-17
