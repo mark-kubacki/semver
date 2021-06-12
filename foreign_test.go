@@ -8,7 +8,7 @@ import (
 	"sort"
 	"testing"
 
-	blang "github.com/blang/semver"
+	blang "github.com/blang/semver/v4"
 	hashicorp "github.com/hashicorp/go-version"
 )
 

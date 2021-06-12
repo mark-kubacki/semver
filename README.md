@@ -14,21 +14,29 @@ A library for parsing and processing of *Versions* and *Ranges* in:
 Does not rely on *regular expressions* neither does it use package *reflection*.
 
 ```bash
-$ sed -i -e 's@ignore@3rdparty@g' *_test.go
+$ sudo /bin/bash -c 'for g in /sys/bus/cpu/drivers/processor/cpu[0-9]*/cpufreq/scaling_governor; do echo performance >$g; done'
+$ sed -i -e 's@ignore@3rdparty@g' foreign_test.go
+$ go mod tidy
 $ go test -tags 3rdparty -run=XXX -benchmem -bench=.
 
-BenchmarkLibraryOne_NewVersion-24        2000000   815 ns/op   145 B/op   4 allocs/op
-BenchmarkLibraryTwo_Make-24              4000000   300 ns/op    94 B/op   3 allocs/op
-Benchmark_NewVersion-24                 30000000    37.2 ns/op   0 B/op   0 allocs/op ←
+Benchmark_Compare-24                           1.392 ns/op 0 B/op   0 allocs/op
+Benchmark_NewVersion-24                       32.02 ns/op  0 B/op   0 allocs/op
+BenchmarkSemverNewRange-24                    86.83 ns/op  0 B/op   0 allocs/op
+Benchmark_SortPtr-24                     2768859 ns/op
 
-BenchmarkLibraryOne_NewConstraint-24      200000  6350 ns/op  2096 B/op  18 allocs/op
-BenchmarkLibraryTwo_ParseRange-24        1000000  1440 ns/op   480 B/op  13 allocs/op
-BenchmarkSemverNewRange-24              10000000   120 ns/op     0 B/op   0 allocs/op ←
+BenchmarkLibraryTwo_Compare-24                 5.019 ns/op 0 B/op   0 allocs/op
+BenchmarkLibraryTwo_Make-24                  299.5 ns/op  75 B/op   2 allocs/op
+BenchmarkLibraryTwo_ParseRange-24           1357 ns/op   456 B/op  13 allocs/op
+BenchmarkLibraryTwo_Sort-24             12771299 ns/op
 
-BenchmarkLibraryOne_Compare-24           1000000  1005 ns/op   395 B/op  12 allocs/op
-BenchmarkLibraryTwo_Compare-24         100000000    20.2 ns/op   0 B/op   0 allocs/op
-BenchmarkSemverCompare-24              200000000     6.88 ns/op  0 B/op   0 allocs/op ←
+BenchmarkLibraryOne_Compare-24              1442 ns/op   480 B/op  17 allocs/op
+BenchmarkLibraryOne_NewVersion-24           1516 ns/op   535 B/op   6 allocs/op
+BenchmarkLibraryOne_NewConstraint-24        7024 ns/op  2092 B/op  18 allocs/op
+BenchmarkLibraryOne_SortPtr-24         668274885 ns/op
 
+# AMD Epyc 7401P, Linux 5.12.10, Go 1.16.5
+# - LibraryOne v1.3.0 sometimes segfaults
+# - LibraryTwo v4 errors on 19.4% of the given versions
 ```
 
 Licensed under a [BSD-style license](LICENSE).
