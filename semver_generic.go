@@ -13,7 +13,7 @@ package semver
 //   -1 if a < b
 //
 // The 'build' is not compared.
-func Compare(a, b Version) int {
+func Compare(a, b *Version) int {
 	for i := 0; i < len(a.version); i++ {
 		if a.version[i] == b.version[i] {
 			continue
@@ -26,7 +26,7 @@ func Compare(a, b Version) int {
 
 // compare works like the exported Compare,
 // only that it allows to skip fields for performance reasons.
-func compare(a, b Version, skipFields uint) int {
+func compare(a, b *Version, skipFields uint) int {
 	for i := int(skipFields); i < len(a.version); i++ {
 		if a.version[i] == b.version[i] {
 			continue

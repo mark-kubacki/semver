@@ -15,7 +15,8 @@ package semver
 //   -1 if a < b
 //
 // The 'build' is not compared.
-func Compare(a, b Version) int
+//go:noescape
+func Compare(a, b *Version) int
 
 // less returns true if t is lexically smaller than o.
 // As side effect, the adjacent 'build' gets compared as well.

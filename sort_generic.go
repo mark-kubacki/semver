@@ -57,7 +57,7 @@ func (p VersionPtrs) isSorted(skipFields uint) bool {
 			continue
 		}
 
-		if compare(*previous, *ptr, skipFields) > 0 {
+		if compare(previous, ptr, skipFields) > 0 {
 			return false
 		}
 		previous = ptr

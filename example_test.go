@@ -36,9 +36,9 @@ func ExampleCompare() {
 	v2 := semver.MustParse("v2.0")
 	v3 := semver.MustParse("v3.0.0")
 
-	fmt.Println("Compare", v3, v2, "=", semver.Compare(v3, v2))
-	fmt.Println("Compare", v2, v2, "=", semver.Compare(v2, v2))
-	fmt.Println("Compare", v1, v2, "=", semver.Compare(v1, v2))
+	fmt.Println("Compare", v3, v2, "=", semver.Compare(&v3, &v2))
+	fmt.Println("Compare", v2, v2, "=", semver.Compare(&v2, &v2))
+	fmt.Println("Compare", v1, v2, "=", semver.Compare(&v1, &v2))
 
 	// Output:
 	// Compare 3.0.0 2.0.0 = 1

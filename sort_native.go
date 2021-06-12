@@ -22,7 +22,7 @@ func (p VersionPtrs) isSorted(skipFields uint) bool {
 
 	previous := p[0]
 	for _, ptr := range p {
-		if Compare(*previous, *ptr) > 0 {
+		if Compare(previous, ptr) > 0 {
 			return false
 		}
 		previous = ptr

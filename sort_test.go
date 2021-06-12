@@ -80,7 +80,7 @@ func TestSortPtr(t *testing.T) {
 					t.Error("nil not contiguous at the end, got:", i, *x[i])
 					break
 				}
-				if Compare(*precedingVersion, *x[i]) >= 1 {
+				if Compare(precedingVersion, x[i]) >= 1 {
 					t.Error("Wrong order between:", i, *precedingVersion, *x[i])
 					break
 				}

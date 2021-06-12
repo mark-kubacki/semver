@@ -135,14 +135,14 @@ func TestVersion(t *testing.T) {
 			So(v1, ShouldResemble, v2)
 			So(v1.Less(v2), ShouldBeFalse)
 			So(v2.Less(v1), ShouldBeFalse)
-			So(Compare(v1, v2), ShouldEqual, 0)
+			So(Compare(&v1, &v2), ShouldEqual, 0)
 		})
 
 		Convey("compare", func() {
 			v1 := MustParse("2.2.1")
 			v2 := MustParse("2.4.0-beta")
-			So(Compare(v1, v2), ShouldEqual, -1)
-			So(Compare(v2, v1), ShouldEqual, 1)
+			So(Compare(&v1, &v2), ShouldEqual, -1)
+			So(Compare(&v2, &v1), ShouldEqual, 1)
 		})
 
 		Convey("between different release types", func() {
@@ -408,10 +408,10 @@ var compareResult = 5
 
 func Benchmark_Compare(b *testing.B) {
 	v, _ := NewVersion(verForBenchmarks)
-	r := Compare(benchV, v)
+	r := Compare(&benchV, &v)
 
 	for n := 0; n < b.N; n++ {
-		r = Compare(benchV, v)
+		r = Compare(&benchV, &v)
 	}
 	compareResult = r
 }
