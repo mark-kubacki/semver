@@ -1,67 +1,116 @@
 tags: ['golang']
 timeout: 180s
+options:
+  env:
+  - 'GOMODCACHE=/var/lib/go'
+  - 'GOCACHE=/var/cache/go'
+  - 'PROJECT_ID=${PROJECT_ID}'
+  - 'REPO_NAME=${REPO_NAME}'
+  - 'GOPROXY=off'
+  volumes:
+  - name: 'GOMODCACHE'
+    path: '/var/lib/go'
+  - name: 'GOCACHE'
+    path: '/var/cache/go'
 
 steps:
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'get golang'
+  waitFor: ['-']
+  entrypoint: 'bash'
+  args:
+  - -c
+  - |
+    set -ex
+    if ! docker tag golang:cloudbuild_cache localhost/golang:latest; then
+      docker pull mirror.gcr.io/library/golang:latest
+      docker tag {mirror.gcr.io/library,localhost}/golang:latest
+    fi
+- name: 'localhost/golang'
   id: 'gofmt'
   entrypoint: 'bash'
   args: ['-c', 'diff <(echo -n) <(gofmt -s -d $(find . -type f -name "*.go" -not -path "./_*"))']
-
-- name: 'gcr.io/cloud-builders/go:debian'
-  id: 'pilot build, amd64'
+- name: 'gcr.io/blitznote/golang/ineffassign'
+  id: 'ineffassign'
   waitFor: ['gofmt']
+  args: ['.']
+- name: 'gcr.io/blitznote/golang/golint'
+  id: 'lint'
+  waitFor: ['gofmt']
+
+- name: 'gcr.io/blitznote/cacheutil'
+  id: 'restore cached var-lib-go'
+  waitFor: ['gofmt', 'ineffassign', 'lint']
+  args: ['restore', '/var/lib/go']
+- name: 'gcr.io/blitznote/cacheutil'
+  id: 'restore cached var-cache-go'
+  waitFor: ['gofmt', 'ineffassign', 'lint']
+  args: ['restore', '/var/cache/go']
+- name: 'localhost/golang'
+  id: 'get dependencies'
+  waitFor: ['gofmt', 'ineffassign', 'lint', 'restore cached var-lib-go']
+  env: ['GOPROXY=https://proxy.golang.org,direct']
+  entrypoint: 'go'
+  args: ['mod', 'download']
+
+- name: 'localhost/golang'
+  id: 'pilot build, amd64'
+  waitFor: ['get dependencies', 'restore cached var-cache-go']
   env: ['GOARCH=amd64']
+  entrypoint: 'go'
   args: ['build', '.', 'errors']
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'vet, amd64'
   waitFor: ['pilot build, amd64']
   env: ['GOARCH=amd64']
+  entrypoint: 'go'
   args: ['vet', '.']
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'test, amd64'
   waitFor: ['vet, amd64']
   env: ['GOARCH=amd64']
-  args: ['test', '-v']
+  entrypoint: 'go'
+  args: ['test']
 
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'pilot build, x86'
-  waitFor: ['gofmt']
+  waitFor: ['get dependencies', 'restore cached var-cache-go']
   env: ['GOARCH=386']
+  entrypoint: 'go'
   args: ['build', '.', 'errors']
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'vet, x86'
   waitFor: ['pilot build, x86']
   env: ['GOARCH=386']
+  entrypoint: 'go'
   args: ['vet', '.']
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'test, x86'
   waitFor: ['vet, x86']
   env: ['GOARCH=386']
-  args: ['test', '-v']
+  entrypoint: 'go'
+  args: ['test']
 
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'pilot build, purego'
-  waitFor: ['gofmt']
+  waitFor: ['get dependencies', 'restore cached var-cache-go']
+  entrypoint: 'go'
   args: ['build', '-tags', 'purego', '.', 'errors']
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'vet, purego'
   waitFor: ['pilot build, purego']
+  entrypoint: 'go'
   args: ['vet', '-tags', 'purego', '.']
-- name: 'gcr.io/cloud-builders/go:debian'
+- name: 'localhost/golang'
   id: 'test, purego'
   waitFor: ['vet, purego']
-  args: ['test', '-v', '-tags', 'purego']
+  entrypoint: 'go'
+  args: ['test', '-tags', 'purego']
 
-- name: 'gcr.io/blitznote/golang/ineffassign'
-  volumes:
-  - name: 'hides_third-party_source'
-    path: '/workspace/gopath/pkg/mod'
-  id: 'ineffassign'
-  waitFor: ['test, amd64', 'test, x86']
-  args: ['.']
-- name: 'gcr.io/blitznote/golang/golint'
-  volumes:
-  - name: 'hides_third-party_source'
-    path: '/workspace/gopath/pkg/mod'
-  id: 'lint'
-  waitFor: ['test, amd64', 'test, x86']
+- name: 'gcr.io/blitznote/cacheutil'
+  id: 'stash cached var-cache-go'
+  args: ['stash', '/var/cache/go']
+- name: 'gcr.io/blitznote/cacheutil'
+  id: 'stash cached var-lib-go'
+  waitFor: ['get dependencies']
+  args: ['stash', '/var/lib/go']
