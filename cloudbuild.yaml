@@ -13,21 +13,44 @@ steps:
   env: ['GOARCH=amd64']
   args: ['build', '.', 'errors']
 - name: 'gcr.io/cloud-builders/go:debian'
+  id: 'vet, amd64'
+  waitFor: ['pilot build, amd64']
+  env: ['GOARCH=amd64']
+  args: ['vet', '.']
+- name: 'gcr.io/cloud-builders/go:debian'
+  id: 'test, amd64'
+  waitFor: ['vet, amd64']
+  env: ['GOARCH=amd64']
+  args: ['test', '-v']
+
+- name: 'gcr.io/cloud-builders/go:debian'
   id: 'pilot build, x86'
   waitFor: ['gofmt']
   env: ['GOARCH=386']
   args: ['build', '.', 'errors']
-
 - name: 'gcr.io/cloud-builders/go:debian'
-  id: 'test, amd64'
-  waitFor: ['pilot build, amd64']
-  env: ['GOARCH=amd64']
-  args: ['test', '-v']
+  id: 'vet, x86'
+  waitFor: ['pilot build, x86']
+  env: ['GOARCH=386']
+  args: ['vet', '.']
 - name: 'gcr.io/cloud-builders/go:debian'
   id: 'test, x86'
-  waitFor: ['pilot build, x86', 'test, amd64']
+  waitFor: ['vet, x86']
   env: ['GOARCH=386']
   args: ['test', '-v']
+
+- name: 'gcr.io/cloud-builders/go:debian'
+  id: 'pilot build, purego'
+  waitFor: ['gofmt']
+  args: ['build', '-tags', 'purego', '.', 'errors']
+- name: 'gcr.io/cloud-builders/go:debian'
+  id: 'vet, purego'
+  waitFor: ['pilot build, purego']
+  args: ['vet', '-tags', 'purego', '.']
+- name: 'gcr.io/cloud-builders/go:debian'
+  id: 'test, purego'
+  waitFor: ['vet, purego']
+  args: ['test', '-v', '-tags', 'purego']
 
 - name: 'gcr.io/blitznote/golang/ineffassign'
   volumes:
@@ -42,7 +65,3 @@ steps:
     path: '/workspace/gopath/pkg/mod'
   id: 'lint'
   waitFor: ['test, amd64', 'test, x86']
-- name: 'gcr.io/cloud-builders/go:debian'
-  id: 'vet'
-  waitFor: ['test, amd64', 'test, x86']
-  args: ['vet', '.']

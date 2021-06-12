@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !amd64,!386,!mips,!mips64,!ppc64,!s390x
+// +build purego !amd64,!386,!mips,!mips64,!ppc64,!s390x
 
 package semver
 
