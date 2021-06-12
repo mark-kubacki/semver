@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // +build !purego
+// +build !go1.17
 
 #include "go_asm.h"
 #include "textflag.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build purego !amd64,!386
+// +build go1.17 purego !amd64,!386
 
 package semver
 
