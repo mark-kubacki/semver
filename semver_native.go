@@ -22,11 +22,11 @@ func Compare(a, b *Version) int
 // As side effect, the adjacent 'build' gets compared as well.
 //
 //go:noescape
-func less(t, o *[14]int32) bool
+func less(a, b *Version) bool
 
 // Less is a convenience function for sorting.
-func (t Version) Less(o Version) bool {
-	return less(&t.version, &o.version)
+func (t *Version) Less(o *Version) bool {
+	return less(t, o)
 }
 
 // Less implements the sort.Interface.
@@ -36,5 +36,5 @@ func (p VersionPtrs) Less(i, j int) bool {
 	} else if p[j] == nil {
 		return true
 	}
-	return less(&p[i].version, &p[j].version)
+	return less(p[i], p[j])
 }

@@ -64,8 +64,8 @@ diff:
 	RET
 
 TEXT ·less(SB),NOSPLIT,$0-17
-	MOVQ	t+0(FP), SI
-	MOVQ	o+8(FP), DI
+	MOVQ	a+0(FP), SI
+	MOVQ	b+8(FP), DI
 
 	XORQ	DX, DX
 	XORQ	BX, BX

@@ -64,8 +64,8 @@ diff:
 	RET
 
 TEXT ·less(SB),NOSPLIT,$0-9
-	MOVL	t+0(FP), SI
-	MOVL	o+4(FP), DI
+	MOVL	a+0(FP), SI
+	MOVL	b+4(FP), DI
 
 	XORL	DX, DX
 	XORL	BX, BX

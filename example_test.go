@@ -14,7 +14,7 @@ func Example_version() {
 	v1 := semver.MustParse("1.2.3-beta")
 	v2 := semver.MustParse("2.0.0-alpha20140805.456-rc3+build1800")
 
-	fmt.Println(v1.Less(v2))
+	fmt.Println(v1.Less(&v2))
 
 	// Output: true
 }
@@ -176,10 +176,10 @@ func ExampleVersion_IsAPreRelease() {
 
 func ExampleVersion_Less() {
 	l, r := semver.MustParse("v2"), semver.MustParse("v3")
-	fmt.Println(l.Less(r), ",", l, "is 'less' than", r)
+	fmt.Println(l.Less(&r), ",", l, "is 'less' than", r)
 
 	l, r = semver.MustParse("v1+build7"), semver.MustParse("v1+build9")
-	fmt.Println(l.Less(r), ",", l, "is 'less' than", r)
+	fmt.Println(l.Less(&r), ",", l, "is 'less' than", r)
 
 	// Output:
 	// true , 2.0.0 is 'less' than 3.0.0

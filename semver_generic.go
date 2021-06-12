@@ -38,7 +38,7 @@ func compare(a, b *Version, skipFields uint) int {
 }
 
 // Less is a convenience function for sorting.
-func (t Version) Less(o Version) bool {
+func (t *Version) Less(o *Version) bool {
 	for i := 0; i < len(t.version); i++ {
 		if t.version[i] == o.version[i] {
 			continue
@@ -55,5 +55,5 @@ func (p VersionPtrs) Less(i, j int) bool {
 	} else if p[j] == nil {
 		return true
 	}
-	return p[i].Less(*p[j])
+	return p[i].Less(p[j])
 }
