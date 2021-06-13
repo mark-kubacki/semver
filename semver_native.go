@@ -4,7 +4,7 @@
 
 // +build amd64 386
 // +build !purego
-// +build !go1.17
+// +build !go1.16
 
 package semver
 
