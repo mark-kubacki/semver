@@ -50,7 +50,6 @@ equal:
 	RET
 
 diff:
-	ORL	$0xfff0, AX	// See step below. These are unrelated and will be zeros.
 	XORL	$0xffff, AX	// Invert mask from "equal" to "differ".
 	BSFL	AX, BX		// Number of the first bit 1 from LSB on counted.
 	XORL	AX, AX

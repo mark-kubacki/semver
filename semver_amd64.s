@@ -50,7 +50,6 @@ equal:
 	RET
 
 diff:
-	ORQ	$0xfff0, AX	// See step below. These are unrelated and will be zeros.
 	XORQ	$0xffff, AX	// Invert mask from "equal" to "differ".
 	BSFQ	AX, BX		// Number of the first bit 1 from LSB on counted.
 	XORQ	AX, AX
