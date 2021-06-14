@@ -33,25 +33,6 @@ var versionPointerBuffer = sync.Pool{
 	},
 }
 
-// VersionPtrs represents an array with elements derived from~ but smaller than Versions.
-// Use this a proxy for sorting of large collections of Versions,
-// to minimize memory moves.
-type VersionPtrs []*Version
-
-// VersionPtrs.Less calls specialized functions.
-// Find them in files *_native.go and *_generic.go.
-// As of Go 1.13 inlining didn't work two levels deep.
-
-// Len implements the sort.Interface.
-func (p VersionPtrs) Len() int {
-	return len(p)
-}
-
-// Swap implements the sort.Interface.
-func (p VersionPtrs) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
-}
-
 // Sort reorders the pointers so that the Versions appear in ascending order.
 //
 // For that it will use optimized algorithms usually less time-complex than

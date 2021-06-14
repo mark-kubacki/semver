@@ -287,3 +287,26 @@ func (t Version) Minor() int {
 func (t Version) Patch() int {
 	return int(t.version[2])
 }
+
+// VersionPtrs represents an array with elements derived from~ but smaller than Versions.
+// Use this a proxy for sorting of large collections of Versions,
+// to minimize memory moves.
+type VersionPtrs []*Version
+
+var _ interface {
+	Sort()
+	// These are from sort.Interface:
+	Len() int
+	Less(int, int) bool
+	Swap(int, int)
+} = VersionPtrs{}
+
+// Len implements the sort.Interface.
+func (p VersionPtrs) Len() int {
+	return len(p)
+}
+
+// Swap implements the sort.Interface.
+func (p VersionPtrs) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}

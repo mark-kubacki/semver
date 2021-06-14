@@ -107,6 +107,34 @@ steps:
   entrypoint: 'go'
   args: ['test', '-tags', 'purego']
 
+# Cannot run tests for these architectures on this CI.
+- name: 'localhost/golang'
+  id: 'pilot build, arm'
+  waitFor: ['get dependencies', 'restore cached var-cache-go']
+  env: ['GOARCH=arm']
+  entrypoint: 'go'
+  args: ['build', '.', 'errors']
+- name: 'localhost/golang'
+  id: 'vet, arm'
+  waitFor: ['pilot build, arm']
+  env: ['GOARCH=arm']
+  entrypoint: 'go'
+  args: ['vet', '.']
+
+- name: 'localhost/golang'
+  id: 'pilot build, mips'
+  waitFor: ['get dependencies', 'restore cached var-cache-go']
+  env: ['GOARCH=mips']
+  entrypoint: 'go'
+  args: ['build', '.', 'errors']
+- name: 'localhost/golang'
+  id: 'vet, mips'
+  waitFor: ['pilot build, mips']
+  env: ['GOARCH=mips']
+  entrypoint: 'go'
+  args: ['vet', '.']
+
+# fin
 - name: 'gcr.io/blitznote/cacheutil'
   id: 'stash cached var-cache-go'
   args: ['stash', '/var/cache/go']
